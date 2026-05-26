@@ -111,6 +111,13 @@ body.dark .wp-row{border-color:#2d3748}
 body.dark .map-filter-btn{background:#1a2332;border-color:#374151;color:#cbd5e1}
 body.dark .plan-card{border-color:#2d3748;background:#1a2332}
 body.dark .plan-card.featured{background:linear-gradient(160deg,#1e2d1a 0%,#1a2332 100%)}
+body.dark .plan-name{color:#f1f5f9}
+body.dark .plan-price{color:#f59e0b}
+body.dark .plan-price span{color:#94a3b8}
+body.dark .plan-period{color:#94a3b8}
+body.dark .plan-feature{color:#cbd5e1}
+body.dark .plan-feature.no{color:#6b7280}
+body.dark .plan-badge{background:var(--amber);color:#0B1829}
 body.dark .info-box{background:#0f1e2d;border-color:#1e3a5f;color:#93c5fd}
 body.dark .warn-box{background:#2d2a0f;border-color:#713f12;color:#fde68a}
 body.dark .sigmet-block,.dark .sigmet-item{background:#2d1515;border-color:#991b1b;color:#fca5a5}
@@ -541,7 +548,7 @@ body{font-family:var(--font);background:var(--gray50);color:var(--text);font-siz
 
   <div class="usage-bar">
     <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;color:var(--amber)"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>
-    <span>Consultas hoy: <strong id="usageCount">0</strong> / 5 (plan gratuito)</span>
+    <span>Consultas hoy: <strong id="usageCount">0</strong> / 10 (plan gratuito)</span>
     <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:0%"></div></div>
     <a href="#" onclick="showTab('precios');return false" style="color:var(--amber);font-size:12px;text-decoration:none;font-weight:600;white-space:nowrap">Ver planes →</a>
   </div>
@@ -808,6 +815,9 @@ body{font-family:var(--font);background:var(--gray50);color:var(--text);font-siz
     <button class="sub-tab" onclick="showSubTab('qnh')">QNH / Altímetro</button>
     <button class="sub-tab" onclick="showSubTab('density')">Densidad de altitud</button>
     <button class="sub-tab" onclick="showSubTab('sunrise')">Amanecer / Ocaso</button>
+    <button class="sub-tab" onclick="showSubTab('winds')">Vientos en altura</button>
+    <button class="sub-tab" onclick="showSubTab('documents')">Documentos oficiales</button>
+    <button class="sub-tab" onclick="showSubTab('history_wx')">Clima histórico</button>
   </div>
 
   <!-- COMBUSTIBLE -->
@@ -907,6 +917,159 @@ body{font-family:var(--font);background:var(--gray50);color:var(--text);font-siz
       <div id="sun-result"></div>
     </div>
   </div>
+  <!-- VIENTOS EN ALTURA -->
+  <div id="sub-winds" class="sub-content">
+    <div class="card">
+      <div class="card-title">Vientos y temperatura en altura — Europa</div>
+      <div class="form-row">
+        <div class="field">
+          <label>Nivel de vuelo</label>
+          <select id="winds-level" onchange="loadWindsAloft()" style="padding:9px 12px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:var(--font);color:var(--text);background:var(--white);outline:none">
+            <option value="850">FL050 — 850 hPa (~5.000 ft)</option>
+            <option value="700" selected>FL100 — 700 hPa (~10.000 ft)</option>
+            <option value="500">FL180 — 500 hPa (~18.000 ft)</option>
+            <option value="300">FL300 — 300 hPa (~30.000 ft)</option>
+            <option value="200">FL380 — 200 hPa (~38.000 ft)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Región</label>
+          <select id="winds-region" onchange="loadWindsAloft()" style="padding:9px 12px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:var(--font);color:var(--text);background:var(--white);outline:none">
+            <option value="eur">Europa</option>
+            <option value="med">Mediterráneo</option>
+            <option value="natlh">Atlántico Norte</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn btn-primary" onclick="loadWindsAloft()">Actualizar</button>
+        </div>
+      </div>
+      <div id="winds-result"><div class="loading"><div class="spinner"></div>Cargando vientos en altura...</div></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap" id="winds-dl-btns"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card card-sm">
+        <div class="card-title">Fuentes oficiales — Vientos en altura</div>
+        <div class="dl-grid" style="margin-top:0">
+          <button class="btn-dl link" onclick="openUrl('https://aviationweather.gov/windtemp/')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5H6V2z"/></svg>AWC Winds Aloft (NOAA)</button>
+          <button class="btn-dl link" onclick="openUrl('https://www.metoffice.gov.uk/aviation/sigwx')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5H6V2z"/></svg>WAFC London SigWx</button>
+          <button class="btn-dl link" onclick="openUrl('https://www.wmo.int/pages/prog/www/DPFS/SIGWX.html')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5H6V2z"/></svg>WAFC Washington</button>
+          <button class="btn-dl link" onclick="openUrl('https://meteorologia.enaire.es')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5H6V2z"/></svg>ENAIRE Meteorología</button>
+          <button class="btn-dl link" onclick="openUrl('https://www.dwd.de/EN/specialusers/aviation/aviation_node.html')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>DWD Aviation Wx (Alemania)</button>
+          <button class="btn-dl link" onclick="openUrl('https://www.aviationweather.gov/fcstdisc')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>FA/Area Forecasts</button>
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="card-title">Referencia — Formato FB/FD</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8;font-family:var(--mono)">
+          <div style="margin-bottom:6px">Formato: DDFF+TT o DDFFGGG+TT</div>
+          <div style="margin-bottom:4px"><strong>DD</strong> = Dirección (decenas de grados)</div>
+          <div style="margin-bottom:4px"><strong>FF</strong> = Velocidad en nudos</div>
+          <div style="margin-bottom:4px"><strong>GGG</strong> = Velocidad si >99 kt</div>
+          <div style="margin-bottom:4px"><strong>TT</strong> = Temperatura en °C</div>
+          <div style="margin-bottom:4px">Viento &gt;100 kt: sumar 50 a DD</div>
+          <div style="margin-bottom:4px">9900 = calma / variable</div>
+          <div style="background:var(--gray50);padding:6px 8px;border-radius:4px;margin-top:8px">Ej: <span style="color:#F59E0B">2718-04</span> → viento 270°/18kt, temp -4°C</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTOS OFICIALES -->
+  <div id="sub-documents" class="sub-content">
+    <div class="section-head" style="margin-bottom:12px">
+      <div><div style="font-size:16px;font-weight:700">Descarga de documentos oficiales</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px">Cartas de aproximación, AIP, NOTAMs y meteorología desde fuentes oficiales</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title">Cartas de aproximación y procedimientos — Por aeródromo</div>
+      <div class="info-box" style="margin-bottom:12px">
+        <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>
+        Las cartas de aproximación, SID y STAR son publicaciones oficiales protegidas por copyright de cada autoridad aeronáutica nacional. No se pueden descargar automáticamente sin acuerdo de licencia. Puedes acceder directamente desde las fuentes oficiales gratuitas que enlazan aquí.
+      </div>
+      <div class="form-row">
+        <div class="field" style="flex:1">
+          <label>Código ICAO del aeródromo</label>
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l3 3"/></svg>
+            <input id="doc-icao" maxlength="4" placeholder="LEMD" oninput="filterAirports(this,'doc-icao-list')" onblur="setTimeout(()=>closeList('doc-icao-list'),200)">
+            <div id="doc-icao-list" class="autocomplete-list"></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn btn-primary" onclick="loadDocLinks()">Buscar documentos</button>
+        </div>
+      </div>
+      <div id="doc-links-result"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Meteorología oficial — Descargar en tiempo real</div>
+        <div class="form-row">
+          <div class="field">
+            <label>Aeródromo(s) ICAO</label>
+            <input id="dl-met-icaos" placeholder="LEMD,LEBL,LEBB" style="padding:9px 12px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:var(--mono);color:var(--text);background:var(--white);outline:none;width:100%">
+          </div>
+        </div>
+        <div class="dl-grid" style="margin-top:8px">
+          <button class="btn-dl" onclick="dlMetBulk('metar')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M8 12l-4-4h2.5V2h3v6H12L8 12zM2 14h12v-1.5H2V14z"/></svg>METAR (todos)</button>
+          <button class="btn-dl" onclick="dlMetBulk('taf')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M8 12l-4-4h2.5V2h3v6H12L8 12zM2 14h12v-1.5H2V14z"/></svg>TAF (todos)</button>
+          <button class="btn-dl" onclick="dlMetBulk('notam')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M8 12l-4-4h2.5V2h3v6H12L8 12zM2 14h12v-1.5H2V14z"/></svg>NOTAMs (todos)</button>
+          <button class="btn-dl" onclick="dlMetBulk('sigmet')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M8 12l-4-4h2.5V2h3v6H12L8 12zM2 14h12v-1.5H2V14z"/></svg>SIGMETs activos</button>
+          <button class="btn-dl" onclick="dlMetBulk('pirep')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M8 12l-4-4h2.5V2h3v6H12L8 12zM2 14h12v-1.5H2V14z"/></svg>PIREPs en ruta</button>
+          <button class="btn-dl" onclick="dlMetBulk('winds')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M8 12l-4-4h2.5V2h3v6H12L8 12zM2 14h12v-1.5H2V14z"/></svg>Vientos en altura</button>
+          <button class="btn-dl" onclick="dlMetBulk('full')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M8 12l-4-4h2.5V2h3v6H12L8 12zM2 14h12v-1.5H2V14z"/></svg>Paquete completo (.txt)</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Fuentes AIP y NOTAMs — Acceso directo oficial</div>
+        <div class="dl-grid" style="margin-top:0">
+          <button class="btn-dl link" onclick="openUrl('https://www.ead.eurocontrol.int/')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>EAD Basic — PIB / NOTAMs Europa</button>
+          <button class="btn-dl link" onclick="openUrl('https://aip.enaire.es/AIP/')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>ENAIRE AIP España</button>
+          <button class="btn-dl link" onclick="openUrl('https://notams.aim.faa.gov/notamSearch/')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>FAA NOTAM Search</button>
+          <button class="btn-dl link" onclick="openUrl('https://www.aurora.nats.co.uk/htmlAIP/')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>NATS eAIP UK</button>
+          <button class="btn-dl link" onclick="openUrl('https://aip.dfs.de/basicIFR/')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>DFS eAIP Alemania</button>
+          <button class="btn-dl link" onclick="openUrl('https://www.sia.aviation-civile.gouv.fr/')"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>SIA eAIP Francia</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIMA HISTÓRICO -->
+  <div id="sub-history_wx" class="sub-content">
+    <div class="card">
+      <div class="card-title">Clima histórico por aeródromo — OpenMeteo ERA5</div>
+      <div class="info-box" style="margin-bottom:12px">
+        <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>
+        Datos de reanálisis ERA5 desde 1940. API gratuita, sin clave. Temperatura, visibilidad y viento medios mensuales históricos para cualquier aeródromo.
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Aeródromo (ICAO)</label>
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l3 3"/></svg>
+            <input id="histwx-icao" maxlength="4" placeholder="LESA" oninput="filterAirports(this,'histwx-list')" onblur="setTimeout(()=>closeList('histwx-list'),200)">
+            <div id="histwx-list" class="autocomplete-list"></div>
+          </div>
+        </div>
+        <div class="field" style="max-width:120px">
+          <label>Año inicio</label>
+          <input type="number" id="histwx-from" value="2015" min="1940" max="2024">
+        </div>
+        <div class="field" style="max-width:120px">
+          <label>Año fin</label>
+          <input type="number" id="histwx-to" value="2024" min="1941" max="2024">
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn btn-primary" onclick="loadHistWx()">Cargar datos</button>
+        </div>
+      </div>
+      <div id="histwx-result"></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ══════════════════════════════ PRECIOS ══════════════════════════════ -->
@@ -1754,6 +1917,64 @@ const AIRPORTS = [
   {icao:'UBBB',name:'Baku Heydar Aliyev',city:'Baku',country:'Azerbaiyán',lat:40.4675,lon:50.0467},
   // Kosovo
   {icao:'BKPR',name:'Pristina Adem Jashari',city:'Pristina',country:'Kosovo',lat:42.5728,lon:21.0358},
+  // ── AERÓDROMOS ESPAÑOLES ADICIONALES ──
+  {icao:'LECU',name:'Madrid Cuatro Vientos',city:'Madrid',country:'España',lat:40.3706,lon:-3.7886},
+  {icao:'LEPM',name:'Madrid Torrejón',city:'Madrid',country:'España',lat:40.4967,lon:-3.4458},
+  {icao:'LELL',name:'Sabadell',city:'Sabadell',country:'España',lat:41.5209,lon:2.1051},
+  {icao:'LECB',name:'La Cerdanya',city:'Puigcerdà',country:'España',lat:42.3864,lon:1.8667},
+  {icao:'LEIG',name:'Igualada-Òdena',city:'Igualada',country:'España',lat:41.5931,lon:1.6481},
+  {icao:'LEAG',name:'Algeciras (La Línea)',city:'Algeciras',country:'España',lat:36.1653,lon:-5.3461},
+  {icao:'LERC',name:'Ronda',city:'Ronda',country:'España',lat:36.7490,lon:-5.2261},
+  {icao:'LEOC',name:'Ocaña',city:'Ocaña',country:'España',lat:39.9375,lon:-3.5033},
+  {icao:'LEBU',name:'Burgos',city:'Burgos',country:'España',lat:42.3578,lon:-3.6208},
+  {icao:'LERJ',name:'Logroño-Agoncillo',city:'Logroño',country:'España',lat:42.4609,lon:-2.3225},
+  {icao:'LEUM',name:'Murcia San Javier',city:'Murcia',country:'España',lat:37.7750,lon:-0.8124},
+  {icao:'LERL',name:'Murcia Región de Murcia',city:'Corvera',country:'España',lat:37.8033,lon:-1.1253},
+  {icao:'LEHC',name:'Huesca-Pirineos',city:'Huesca',country:'España',lat:42.0761,lon:-0.3166},
+  {icao:'LETL',name:'Teruel',city:'Teruel',country:'España',lat:40.4033,lon:-1.2183},
+  {icao:'LESO',name:'San Sebastián/Hondarribia',city:'San Sebastián',country:'España',lat:43.3565,lon:-1.7906},
+  {icao:'LEMD2',name:'Madrid Barajas (Satélite)',city:'Madrid',country:'España',lat:40.4936,lon:-3.5670},
+  {icao:'LELN2',name:'León (Civil)',city:'León',country:'España',lat:42.5890,lon:-5.6556},
+  {icao:'LEPA2',name:'Palma Norte',city:'Palma',country:'España',lat:39.5517,lon:2.7388},
+  {icao:'LETE',name:'Castellón',city:'Castellón de la Plana',country:'España',lat:39.9921,lon:0.0731},
+  {icao:'LEBT',name:'Albacete (Base Aérea)',city:'Albacete',country:'España',lat:38.9485,lon:-1.8635},
+  {icao:'LEBE',name:'Bétera',city:'Bétera',country:'España',lat:39.5817,lon:-0.4592},
+  {icao:'LEDO',name:'Rozas',city:'Lugo',country:'España',lat:43.1147,lon:-7.4547},
+  {icao:'LEGN',name:'Lleida-Alguaire',city:'Lleida',country:'España',lat:41.7281,lon:0.5352},
+  {icao:'LEBT2',name:'Badajoz',city:'Badajoz',country:'España',lat:38.8913,lon:-6.8213},
+  // ── AERÓDROMOS EUROPEOS ADICIONALES ──
+  {icao:'EDFC',name:'Aschaffenburg',city:'Aschaffenburg',country:'Alemania',lat:49.9386,lon:9.0647},
+  {icao:'EDHS',name:'Stade',city:'Stade',country:'Alemania',lat:53.5931,lon:9.4797},
+  {icao:'LFBD2',name:'Bordeaux Sud Gironde',city:'Bordeaux',country:'Francia',lat:44.5167,lon:-0.3833},
+  {icao:'LFLB',name:'Chambéry-Savoie',city:'Chambéry',country:'Francia',lat:45.6381,lon:5.8803},
+  {icao:'LFMK',name:'Carcassonne',city:'Carcassonne',country:'Francia',lat:43.2160,lon:2.3063},
+  {icao:'LFLW',name:'Aurillac',city:'Aurillac',country:'Francia',lat:44.8914,lon:2.4219},
+  {icao:'LFSB',name:'Bâle-Mulhouse-Fribourg',city:'Basel',country:'Suiza/Francia',lat:47.5896,lon:7.5299},
+  {icao:'LSZR',name:'St. Gallen-Altenrhein',city:'Altenrhein',country:'Suiza',lat:47.4850,lon:9.5608},
+  {icao:'LOXZ',name:'Zeltweg',city:'Zeltweg',country:'Austria',lat:47.2028,lon:14.7442},
+  {icao:'LHPR',name:'Győr-Pér',city:'Győr',country:'Hungría',lat:47.6244,lon:17.8136},
+  {icao:'LDRI',name:'Rijeka',city:'Rijeka',country:'Croacia',lat:45.2169,lon:14.5703},
+  {icao:'LDLO',name:'Lošinj',city:'Mali Lošinj',country:'Croacia',lat:44.5658,lon:14.3931},
+  {icao:'LGKL',name:'Kalamata',city:'Kalamata',country:'Grecia',lat:37.0683,lon:22.0255},
+  {icao:'LGHI',name:'Chios Island',city:'Chios',country:'Grecia',lat:38.3433,lon:26.1406},
+  {icao:'LGKF',name:'Kefallinia',city:'Argostoli',country:'Grecia',lat:38.1200,lon:20.5005},
+  {icao:'LGSM',name:'Samos',city:'Samos',country:'Grecia',lat:37.6900,lon:26.9117},
+  {icao:'LGKP',name:'Karpathos',city:'Karpathos',country:'Grecia',lat:35.4214,lon:27.1460},
+  {icao:'LGZA',name:'Zakynthos',city:'Zakynthos',country:'Grecia',lat:37.7509,lon:20.8843},
+  {icao:'EPSY',name:'Olsztyn-Mazury',city:'Olsztyn',country:'Polonia',lat:53.4819,lon:20.9378},
+  {icao:'EPSC',name:'Szczecin-Goleniów',city:'Szczecin',country:'Polonia',lat:53.5847,lon:14.9022},
+  {icao:'LRAR',name:'Arad',city:'Arad',country:'Rumanía',lat:46.1767,lon:21.2619},
+  {icao:'LRSB',name:'Sibiu',city:'Sibiu',country:'Rumanía',lat:45.7856,lon:24.0913},
+  {icao:'LRBS',name:'Băneasa',city:'Bucharest',country:'Rumanía',lat:44.5032,lon:26.1021},
+  {icao:'EKVG',name:'Vágar (Faroe Islands)',city:'Sørvágur',country:'Islas Feroe',lat:62.0636,lon:-7.2772},
+  {icao:'BIKF2',name:'Akureyri',city:'Akureyri',country:'Islandia',lat:65.6600,lon:-18.0728},
+  {icao:'ENFL',name:'Florø',city:'Florø',country:'Noruega',lat:61.5836,lon:5.0247},
+  {icao:'ENML',name:'Molde',city:'Molde',country:'Noruega',lat:62.7447,lon:7.2625},
+  {icao:'ENSG',name:'Sogndal',city:'Sogndal',country:'Noruega',lat:61.1561,lon:7.1378},
+  {icao:'EFJO',name:'Joensuu',city:'Joensuu',country:'Finlandia',lat:62.6629,lon:29.6075},
+  {icao:'EFOU',name:'Oulu',city:'Oulu',country:'Finlandia',lat:64.9301,lon:25.3546},
+  {icao:'ESMS',name:'Malmö Airport',city:'Malmö',country:'Suecia',lat:55.5363,lon:13.3761},
+  {icao:'ESOK',name:'Karlstad',city:'Karlstad',country:'Suecia',lat:59.4447,lon:13.3372},
 ];
 
 const AIP_SOURCES = {
@@ -1813,8 +2034,23 @@ const MAJOR_AIRPORTS_HOME = ['LEMD','LEBL','EGLL','LFPG','EDDF','EDDM','LIRF','E
 // STATE
 // ══════════════════════════════════════════════════════════
 let usageCount = parseInt(localStorage.getItem('pf_usage_' + new Date().toDateString()) || '0');
-let isPro = localStorage.getItem('pf_pro') === '1';
-const FREE_LIMIT = 5;
+// Plan levels: 'free' | 'pro' | 'proplus' | 'business'
+let userPlan = localStorage.getItem('pf_plan') || 'free';
+let isPro = userPlan !== 'free';
+let isProPlus = userPlan === 'proplus' || userPlan === 'business';
+const FREE_LIMIT = 10;
+
+// Pro vs Pro+ feature matrix
+const PLAN_FEATURES = {
+  free:     { briefingsPerDay:10, notamsShown:3, historyDays:0,  pdfExport:false, alertsMax:2,  multiDevice:false, apiAccess:false, climaHistorica:false, windAloft:true,  customAC:false, b2bAccess:false },
+  pro:      { briefingsPerDay:999,notamsShown:999,historyDays:30, pdfExport:true,  alertsMax:10, multiDevice:false, apiAccess:false, climaHistorica:true,  windAloft:true,  customAC:true,  b2bAccess:false },
+  proplus:  { briefingsPerDay:999,notamsShown:999,historyDays:999,pdfExport:true,  alertsMax:50, multiDevice:true,  apiAccess:true,  climaHistorica:true,  windAloft:true,  customAC:true,  b2bAccess:false },
+  business: { briefingsPerDay:999,notamsShown:999,historyDays:999,pdfExport:true,  alertsMax:999,multiDevice:true,  apiAccess:true,  climaHistorica:true,  windAloft:true,  customAC:true,  b2bAccess:true  },
+};
+
+function getPlanFeatures(){ return PLAN_FEATURES[userPlan] || PLAN_FEATURES.free; }
+function hasFeature(f){ return getPlanFeatures()[f] === true || (typeof getPlanFeatures()[f] === 'number' && getPlanFeatures()[f] > 0); }
+function featureLimit(f){ const v = getPlanFeatures()[f]; return typeof v === 'number' ? v : (v ? 999 : 0); }
 
 function trackUsage(){
   usageCount++;
@@ -1902,29 +2138,52 @@ async function apiFetch(url){
   return null;
 }
 
+// ── Aviation Weather API — correct parameters ──
+// API requires ids= for METAR/TAF, format=json always
 async function fetchMetar(icao){
-  const d = await apiFetch(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=json&hours=3`);
-  return d && d.length ? d[0] : null;
+  // hours=3 = last 3 hours, taf=false = no TAF included
+  const d = await apiFetch(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=json&taf=false&hours=3`);
+  if(d && Array.isArray(d) && d.length) return d[0];
+  return null;
+}
+
+async function fetchMetarBatch(icaos){
+  if(!icaos || !icaos.length) return [];
+  const ids = icaos.slice(0,20).join(','); // API limit
+  const d = await apiFetch(`https://aviationweather.gov/api/data/metar?ids=${ids}&format=json&taf=false&hours=2`);
+  return d && Array.isArray(d) ? d : [];
 }
 
 async function fetchTaf(icao){
+  // TAF requires ids= parameter
   const d = await apiFetch(`https://aviationweather.gov/api/data/taf?ids=${icao}&format=json`);
-  return d && d.length ? d[0] : null;
+  if(d && Array.isArray(d) && d.length) return d[0];
+  return null;
 }
 
 async function fetchNotamsApi(icao){
+  // NOTAMs: id= (singular) for one airport
   const d = await apiFetch(`https://aviationweather.gov/api/data/notam?id=${icao}&format=json`);
-  return d || [];
+  return Array.isArray(d) ? d : [];
 }
 
 async function fetchSigmets(){
+  // AIRSIGMETs: type=sigmet or type=airmet
   const d = await apiFetch(`https://aviationweather.gov/api/data/airsigmet?format=json&type=sigmet`);
-  return d || [];
+  return Array.isArray(d) ? d : [];
 }
 
 async function fetchPireps(){
+  // PIREPs: age in hours
   const d = await apiFetch(`https://aviationweather.gov/api/data/pirep?format=json&age=3`);
-  return d || [];
+  return Array.isArray(d) ? d : [];
+}
+
+async function fetchWindsAloftRaw(level){
+  // Winds aloft: level in hPa (850, 700, 500, 300, 200)
+  // region: us (Americas), eur (Europe)
+  const d = await apiFetch(`https://aviationweather.gov/api/data/windtemp?region=eur&fcst=06&level=${level}h&format=json`);
+  return Array.isArray(d) ? d : [];
 }
 
 // ── METAR decoder en español ──
@@ -1940,11 +2199,12 @@ function decodeMETAR(m){
     parts.push(`Viento ${dir} a ${m.wspd} kt${m.wgst ? ` con rachas de ${m.wgst} kt` : ''}.`);
   }
 
-  // Visibilidad
+  // Visibilidad — API devuelve millas statute (SM); convertir a km
   if(m.visib != null){
-    const vis = m.visib;
-    const visStr = vis >= 9999 ? 'más de 10 km' : vis >= 5000 ? `${(vis/1000).toFixed(0)} km` : `${vis} m`;
-    const visWarn = vis < 1000 ? ' ⚠ Visibilidad muy reducida.' : vis < 3000 ? ' ⚠ Visibilidad reducida.' : '';
+    const visSM = m.visib; // statute miles
+    const visKm = visSM * 1.60934;
+    const visStr = visKm >= 10 ? 'más de 10 km' : visKm >= 1 ? `${visKm.toFixed(1)} km` : `${Math.round(visKm*1000)} m`;
+    const visWarn = visKm < 1.5 ? ' ⚠ Visibilidad muy reducida.' : visKm < 5 ? ' ⚠ Visibilidad reducida.' : '';
     parts.push(`Visibilidad ${visStr}.${visWarn}`);
   }
 
@@ -1982,12 +2242,12 @@ function decodeMETAR(m){
 // ══════════════════════════════════════════════════════════
 function flightCat(m){
   if(!m) return 'UNK';
-  const vis = m.visib || 9999;
+  const vis = (m.visib || 99) * 1.60934; // convert SM to km
   const ceilings = (m.sky || []).filter(s => s.cover === 'BKN' || s.cover === 'OVC').map(s => s.base);
   const ceil = ceilings.length ? Math.min(...ceilings) : 9999;
-  if(ceil < 500 || vis < 1) return 'LIFR';
-  if(ceil < 1000 || vis < 3) return 'IFR';
-  if(ceil < 3000 || vis < 5) return 'MVFR';
+  if(ceil < 500 || vis < 1.6) return 'LIFR';  // <1 SM
+  if(ceil < 1000 || vis < 4.8) return 'IFR';   // <3 SM
+  if(ceil < 3000 || vis < 8.0) return 'MVFR';  // <5 SM
   return 'VFR';
 }
 
@@ -2289,7 +2549,7 @@ async function searchApt(){
           ${m.altim != null ? `<div class="met-param"><div class="met-param-label">QNH</div><div class="met-param-val">${Math.round(m.altim)}<span class="met-param-unit">hPa</span></div></div>` : ''}
           ${m.wdir != null ? `<div class="met-param"><div class="met-param-label">Viento</div><div class="met-param-val">${m.wdir}°/${m.wspd}<span class="met-param-unit">kt</span></div></div>` : ''}
           ${m.wgst != null ? `<div class="met-param"><div class="met-param-label">Rachas</div><div class="met-param-val">${m.wgst}<span class="met-param-unit">kt</span></div></div>` : ''}
-          ${m.visib != null ? `<div class="met-param"><div class="met-param-label">Visibilidad</div><div class="met-param-val">${m.visib}<span class="met-param-unit">m</span></div></div>` : ''}
+          ${m.visib != null ? `<div class="met-param"><div class="met-param-label">Visibilidad</div><div class="met-param-val">${(m.visib*1.60934).toFixed(1)}<span class="met-param-unit">km</span></div></div>` : ''}
           ${m.ceil != null ? `<div class="met-param"><div class="met-param-label">Techo</div><div class="met-param-val">${m.ceil}<span class="met-param-unit">ft</span></div></div>` : ''}
         </div>
       </div>`;
@@ -3341,9 +3601,15 @@ async function loadPopupMetar(icao,marker){
 
 async function loadMapBatch(icaos){
   try{
-    const d=await apiFetch(`https://aviationweather.gov/api/data/metar?ids=${icaos.join(',')}&format=json&hours=2`);
-    if(d&&d.length) d.forEach(m=>updateMapMarker(m.icaoId,flightCat(m)));
-  }catch(e){}
+    // Process in batches of 20 (API limit)
+    const chunks = [];
+    for(let i=0;i<icaos.length;i+=20) chunks.push(icaos.slice(i,i+20));
+    for(const chunk of chunks){
+      const d = await fetchMetarBatch(chunk);
+      if(d && d.length) d.forEach(m=>{ if(m.icaoId) updateMapMarker(m.icaoId, flightCat(m)); });
+      await new Promise(r=>setTimeout(r,300)); // throttle
+    }
+  }catch(e){ console.warn('loadMapBatch error:', e); }
 }
 
 function updateMapMarker(icao,cat){
@@ -4424,6 +4690,1666 @@ function applyTranslations() {
 // ── Init on page load ──
 loadDarkMode();
 loadLang();
+
+
+
+// ══════════════════════════════════════════════════════════
+// WEATHER CONDITION ICONS (SVG)
+// ══════════════════════════════════════════════════════════
+function getWeatherIcon(m, size=48){
+  if(!m) return wxIcon('unk', size);
+  const cover = m.sky ? m.sky.map(s=>s.cover) : [];
+  const wx = m.wxString || '';
+  const hasTs = /TS/.test(wx);
+  const hasRain = /RA|DZ|SH/.test(wx);
+  const hasSnow = /SN|SG|GS/.test(wx);
+  const hasFog = /FG|BR/.test(wx);
+  const hasHaze = /HZ|DU|SA/.test(wx);
+  const hasFZ = /FZ/.test(wx);
+  const isOVC = cover.includes('OVC');
+  const isBKN = cover.includes('BKN');
+  const isSCT = cover.includes('SCT');
+  const isFEW = cover.includes('FEW');
+  const isClear = cover.includes('SKC')||cover.includes('CLR')||cover.length===0;
+  const isNight = (() => { const h = new Date().getUTCHours(); return h < 6 || h > 18; })();
+
+  if(hasTs && hasRain) return wxIcon('thunder_rain', size);
+  if(hasTs) return wxIcon('thunder', size);
+  if(hasFZ && hasRain) return wxIcon('freezing_rain', size);
+  if(hasSnow) return wxIcon('snow', size);
+  if(hasFog) return wxIcon('fog', size);
+  if(hasHaze) return wxIcon('haze', size);
+  if(hasRain && isOVC) return wxIcon('heavy_rain', size);
+  if(hasRain) return wxIcon('rain', size);
+  if(isOVC || isBKN) return wxIcon('overcast', size);
+  if(isSCT) return wxIcon(isNight?'partly_cloudy_night':'partly_cloudy', size);
+  if(isFEW) return wxIcon(isNight?'few_clouds_night':'few_clouds', size);
+  if(isClear) return wxIcon(isNight?'clear_night':'clear', size);
+  return wxIcon('unk', size);
+}
+
+function wxIcon(type, size){
+  const s = size || 48;
+  const icons = {
+    clear: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><circle cx="24" cy="24" r="10" fill="#F59E0B"/><g stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round">${[0,45,90,135,180,225,270,315].map(a=>{const r=a*Math.PI/180;const x1=24+16*Math.cos(r),y1=24+16*Math.sin(r),x2=24+20*Math.cos(r),y2=24+20*Math.sin(r);return`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`}).join('')}</g></svg>`,
+    clear_night: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M28 10a16 16 0 11-16 16 12 12 0 0016-16z" fill="#94a3b8"/><circle cx="38" cy="12" r="2" fill="#fde68a"/><circle cx="34" cy="8" r="1.5" fill="#fde68a"/><circle cx="42" cy="18" r="1" fill="#fde68a"/></svg>`,
+    few_clouds: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><circle cx="20" cy="22" r="8" fill="#F59E0B" opacity=".9"/><ellipse cx="28" cy="30" rx="12" ry="8" fill="white" stroke="#e2e8f0" stroke-width="1"/><ellipse cx="18" cy="32" rx="8" ry="6" fill="white" stroke="#e2e8f0" stroke-width="1"/></svg>`,
+    few_clouds_night: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M16 18a10 10 0 11-8 10 8 8 0 008-10z" fill="#94a3b8"/><ellipse cx="30" cy="32" rx="12" ry="7" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/></svg>`,
+    partly_cloudy: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><circle cx="18" cy="20" r="9" fill="#F59E0B"/><ellipse cx="30" cy="28" rx="13" ry="9" fill="white" stroke="#d1d5db" stroke-width="1"/><ellipse cx="18" cy="30" rx="9" ry="7" fill="white" stroke="#d1d5db" stroke-width="1"/></svg>`,
+    partly_cloudy_night: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M14 14a12 12 0 11-10 12 9 9 0 0010-12z" fill="#64748b"/><ellipse cx="30" cy="30" rx="13" ry="8" fill="#f1f5f9" stroke="#d1d5db" stroke-width="1"/></svg>`,
+    overcast: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><ellipse cx="24" cy="26" rx="17" ry="11" fill="#94a3b8"/><ellipse cx="16" cy="28" rx="11" ry="9" fill="#94a3b8"/><ellipse cx="32" cy="24" rx="13" ry="10" fill="#64748b"/></svg>`,
+    rain: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><ellipse cx="24" cy="20" rx="14" ry="9" fill="#64748b"/><ellipse cx="16" cy="22" rx="10" ry="8" fill="#64748b"/><line x1="18" y1="32" x2="15" y2="40" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="31" x2="21" y2="39" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"/><line x1="30" y1="32" x2="27" y2="40" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+    heavy_rain: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><ellipse cx="24" cy="18" rx="15" ry="10" fill="#475569"/><line x1="15" y1="30" x2="11" y2="42" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/><line x1="21" y1="29" x2="17" y2="41" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/><line x1="27" y1="30" x2="23" y2="42" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/><line x1="33" y1="29" x2="29" y2="41" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+    thunder: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><ellipse cx="24" cy="18" rx="15" ry="10" fill="#374151"/><polygon points="26,26 20,36 24,36 22,46 32,32 27,32" fill="#fbbf24"/></svg>`,
+    thunder_rain: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><ellipse cx="22" cy="16" rx="14" ry="9" fill="#1f2937"/><polygon points="24,24 19,33 23,33 21,41 30,28 25,28" fill="#fbbf24"/><line x1="14" y1="31" x2="11" y2="39" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/><line x1="33" y1="30" x2="30" y2="38" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/></svg>`,
+    snow: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><ellipse cx="24" cy="18" rx="14" ry="9" fill="#94a3b8"/><text x="15" y="38" font-size="18" fill="#bfdbfe">❄</text><text x="26" y="42" font-size="14" fill="#bfdbfe">❄</text></svg>`,
+    fog: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><line x1="8" y1="18" x2="40" y2="18" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="26" x2="38" y2="26" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="34" x2="36" y2="34" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/></svg>`,
+    haze: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><circle cx="24" cy="22" r="8" fill="#F59E0B" opacity=".4"/><line x1="8" y1="30" x2="40" y2="30" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" opacity=".5"/><line x1="10" y1="36" x2="38" y2="36" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" opacity=".4"/></svg>`,
+    freezing_rain: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><ellipse cx="24" cy="18" rx="14" ry="9" fill="#475569"/><line x1="18" y1="30" x2="15" y2="38" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="29" x2="21" y2="37" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round"/><line x1="30" y1="30" x2="27" y2="38" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round"/><text x="14" y="46" font-size="12" fill="#bfdbfe">❄</text></svg>`,
+    unk: `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/><text x="24" y="30" font-size="18" fill="#94a3b8" text-anchor="middle">?</text></svg>`,
+  };
+  return icons[type] || icons.unk;
+}
+
+// ══════════════════════════════════════════════════════════
+// RUNWAY / WIND ROSE DIAGRAM (like the image sent by user)
+// ══════════════════════════════════════════════════════════
+const RUNWAY_DATA = {
+  'LEMD':[{id:'18L',hdg:180},{id:'18R',hdg:180},{id:'14L',hdg:140},{id:'14R',hdg:140}],
+  'LEBL':[{id:'02',hdg:20},{id:'07L',hdg:70},{id:'07R',hdg:70}],
+  'LESA':[{id:'05',hdg:51},{id:'23',hdg:231}],
+  'LECU':[{id:'16',hdg:162},{id:'28',hdg:281}],
+  'EGLL':[{id:'09L',hdg:90},{id:'09R',hdg:90}],
+  'LFPG':[{id:'08L',hdg:80},{id:'09L',hdg:90}],
+  'EDDF':[{id:'07L',hdg:70},{id:'07C',hdg:70},{id:'18',hdg:180}],
+  'EHAM':[{id:'06',hdg:60},{id:'18R',hdg:180},{id:'27',hdg:270}],
+  'LIRF':[{id:'07',hdg:70},{id:'16R',hdg:160}],
+  'LSZH':[{id:'10',hdg:100},{id:'14',hdg:140},{id:'16',hdg:160},{id:'28',hdg:280}],
+  'LEPA':[{id:'06L',hdg:60},{id:'24R',hdg:240}],
+  'LEBB':[{id:'30',hdg:300},{id:'12',hdg:120}],
+  'LEMG':[{id:'13',hdg:130},{id:'31',hdg:310}],
+  'LEAL':[{id:'10',hdg:100},{id:'28',hdg:280}],
+  'LPPT':[{id:'03',hdg:30},{id:'21',hdg:210}],
+  'LOWW':[{id:'11',hdg:110},{id:'16',hdg:160},{id:'29',hdg:290},{id:'34',hdg:340}],
+};
+
+function buildRunwayWindRose(icao, wdir, wspd, size=200){
+  const rwys = RUNWAY_DATA[icao] || [];
+  const hasWind = wdir != null && wspd != null;
+  const cx=size/2, cy=size/2, r=size*0.38, rwyW=size*0.045;
+
+  // Group runways by magnetic heading (pair them)
+  const pairs = [];
+  const seen = new Set();
+  rwys.forEach(rwy=>{
+    const base = rwy.hdg <= 180 ? rwy.hdg : rwy.hdg - 180;
+    if(!seen.has(base)){ pairs.push({hdg:base, rwys:[rwy]}); seen.add(base); }
+    else { pairs.find(p=>p.hdg===base).rwys.push(rwy); }
+  });
+
+  let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block">
+    <defs>
+      <radialGradient id="bg_${icao}"><stop offset="0%" stop-color="#1a2e4a" stop-opacity=".6"/>
+      <stop offset="100%" stop-color="#0d1829" stop-opacity=".9"/></radialGradient>
+    </defs>
+    <circle cx="${cx}" cy="${cy}" r="${size*0.49}" fill="url(#bg_${icao})" stroke="#1e3350" stroke-width="1"/>
+    <!-- Tick marks & compass rose -->`;
+
+  // Tick marks and labels (every 30°)
+  for(let deg=0; deg<360; deg+=10){
+    const rad = (deg-90)*Math.PI/180;
+    const isMajor = deg%30===0;
+    const r1 = isMajor ? r+size*0.06 : r+size*0.03;
+    const r2 = r+size*0.1;
+    const x1=cx+r1*Math.cos(rad), y1=cy+r1*Math.sin(rad);
+    const x2=cx+(r+size*0.02)*Math.cos(rad), y2=cy+(r+size*0.02)*Math.sin(rad);
+    svg += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(255,255,255,0.25)" stroke-width="${isMajor?1.5:0.7}"/>`;
+    if(isMajor){
+      const lx=cx+(r+size*0.14)*Math.cos(rad), ly=cy+(r+size*0.14)*Math.sin(rad);
+      const labels = {0:'N',30:'3',60:'6',90:'E',120:'12',150:'15',180:'S',210:'21',240:'24',270:'W',300:'30',330:'33'};
+      const label = labels[deg] || '';
+      svg += `<text x="${lx.toFixed(1)}" y="${(ly+size*0.02).toFixed(1)}" text-anchor="middle" font-size="${size*0.07}" fill="rgba(255,255,255,0.7)" font-family="monospace" font-weight="600">${label}</text>`;
+    }
+  }
+
+  // Compass N/S/E/W triangles
+  svg += `<polygon points="${cx},${cy-r+2} ${cx-6},${cy-r+14} ${cx+6},${cy-r+14}" fill="white"/>`;
+  svg += `<polygon points="${cx+r-2},${cy} ${cx+r-14},${cy-6} ${cx+r-14},${cy+6}" fill="rgba(255,255,255,0.4)"/>`;
+
+  // Runway strips
+  pairs.forEach(pair=>{
+    const rad = (pair.hdg - 90) * Math.PI / 180;
+    const x1=cx-r*0.7*Math.cos(rad), y1=cy-r*0.7*Math.sin(rad);
+    const x2=cx+r*0.7*Math.cos(rad), y2=cy+r*0.7*Math.sin(rad);
+    // Runway body (thick black stripe with dashes)
+    svg += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#1a1a1a" stroke-width="${rwyW}" stroke-linecap="round"/>`;
+    svg += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="white" stroke-width="1.5" stroke-dasharray="6 5" stroke-linecap="round"/>`;
+    // Threshold marks
+    const perpRad = rad + Math.PI/2;
+    const hw = rwyW*1.2;
+    svg += `<line x1="${(x1-hw*Math.cos(perpRad)).toFixed(1)}" y1="${(y1-hw*Math.sin(perpRad)).toFixed(1)}" x2="${(x1+hw*Math.cos(perpRad)).toFixed(1)}" y2="${(y1+hw*Math.sin(perpRad)).toFixed(1)}" stroke="white" stroke-width="3.5" stroke-linecap="round"/>`;
+    svg += `<line x1="${(x2-hw*Math.cos(perpRad)).toFixed(1)}" y1="${(y2-hw*Math.sin(perpRad)).toFixed(1)}" x2="${(x2+hw*Math.cos(perpRad)).toFixed(1)}" y2="${(y2+hw*Math.sin(perpRad)).toFixed(1)}" stroke="white" stroke-width="3.5" stroke-linecap="round"/>`;
+    // RWY numbers
+    const rwyIds = pair.rwys.map(r=>r.id).join('/');
+    const opp = rwyIds.split('/').map(id=>{
+      const n = parseInt(id.replace(/[LRC]/,''));
+      const opp = n <= 18 ? n+18 : n-18;
+      const suf = id.replace(/[0-9]/g,'');
+      const oppSuf = suf==='L'?'R':suf==='R'?'L':suf;
+      return opp + oppSuf;
+    }).join('/');
+    svg += `<text x="${(x1+12*Math.cos(rad)).toFixed(1)}" y="${(y1+12*Math.sin(rad)+3).toFixed(1)}" text-anchor="middle" font-size="${size*0.065}" fill="white" font-family="monospace" font-weight="700">${rwyIds}</text>`;
+    svg += `<text x="${(x2-12*Math.cos(rad)).toFixed(1)}" y="${(y2-12*Math.sin(rad)+3).toFixed(1)}" text-anchor="middle" font-size="${size*0.065}" fill="white" font-family="monospace" font-weight="700">${opp}</text>`;
+  });
+
+  // Wind arrow
+  if(hasWind && wdir > 0){
+    const windRad = (wdir - 90) * Math.PI / 180;
+    // Arrow FROM wind direction (wind barb origin)
+    const wx = cx - r*0.55*Math.cos(windRad);
+    const wy = cy - r*0.55*Math.sin(windRad);
+    const wx2 = cx + r*0.45*Math.cos(windRad);
+    const wy2 = cy + r*0.45*Math.sin(windRad);
+    // Colored based on crosswind
+    const xwindColor = wspd > 20 ? '#ef4444' : wspd > 10 ? '#f59e0b' : '#22c55e';
+    svg += `<line x1="${wx.toFixed(1)}" y1="${wy.toFixed(1)}" x2="${wx2.toFixed(1)}" y2="${wy2.toFixed(1)}" stroke="${xwindColor}" stroke-width="3" stroke-linecap="round" marker-end="url(#arr_${icao})"/>`;
+    // Arrowhead
+    svg += `<defs><marker id="arr_${icao}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="${xwindColor}"/></marker></defs>`;
+    // Wind label at bottom
+    svg += `<text x="${cx}" y="${size-8}" text-anchor="middle" font-size="${size*0.08}" fill="rgba(255,255,255,0.8)" font-family="monospace">${String(wdir).padStart(3,'0')}° / ${wspd} kt</text>`;
+
+    // Crosswind value for each runway
+    pairs.forEach((pair,pi)=>{
+      const angle = (wdir - pair.hdg) * Math.PI / 180;
+      const xw = Math.abs(wspd * Math.sin(angle)).toFixed(1);
+      svg += `<text x="${cx}" y="${14 + pi*13}" text-anchor="middle" font-size="${size*0.07}" fill="rgba(255,255,255,0.5)" font-family="monospace">XW ${pair.rwys[0].id}: ${xw} kt</text>`;
+    });
+  }
+
+  if(!rwys.length){
+    svg += `<text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="${size*0.08}" fill="rgba(255,255,255,0.4)" font-family="sans-serif">Sin datos de pista</text>`;
+  }
+
+  svg += `</svg>`;
+  return svg;
+}
+
+// ══════════════════════════════════════════════════════════
+// SUNRISE / SUNSET ARC VISUALIZATION
+// ══════════════════════════════════════════════════════════
+function buildSunriseArc(aptData, date){
+  const lat = aptData.lat, lon = aptData.lon;
+  const d = date || new Date();
+  // Simple sunrise/sunset calculation
+  const J = Math.floor((d - new Date(d.getFullYear(),0,0)) / 86400000);
+  const M = (357.5291 + 0.98560028 * (J-2)) * Math.PI/180;
+  const C = 1.9148*Math.sin(M) + 0.02*Math.sin(2*M) + 0.0003*Math.sin(3*M);
+  const lambda = (280.4665 + 36000.7698*(J/365.25) + C + 180) % 360 * Math.PI/180;
+  const sinDec = Math.sin(23.45*Math.PI/180)*Math.sin(lambda);
+  const dec = Math.asin(sinDec);
+  const latR = lat*Math.PI/180;
+
+  function sunTime(angle){
+    const cosOmega = (Math.cos(angle*Math.PI/180) - Math.sin(latR)*sinDec) / (Math.cos(latR)*Math.cos(dec));
+    if(cosOmega>1||cosOmega<-1) return null;
+    return Math.acos(cosOmega)*180/Math.PI;
+  }
+
+  const transit = 12 - lon/15;
+  const omega = sunTime(90.833);
+  const civilOmega = sunTime(96);
+  if(!omega) return '<div class="info-box">Sol no se pone en esta época para este aeródromo</div>';
+
+  const sr = transit - omega/15, ss = transit + omega/15;
+  const cdawn = transit - civilOmega/15, cdusk = transit + civilOmega/15;
+  const now = new Date().getUTCHours() + new Date().getUTCMinutes()/60;
+
+  function fmt(h){ const hh=Math.floor(((h%24)+24)%24),mm=Math.round((h%1)*60); return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
+  function pct(h){ return Math.max(0,Math.min(100,((((h%24)+24)%24)/24)*100)); }
+
+  const W=560, H=90, pad=30;
+  const pw = W-2*pad;
+  function tx(h){ return pad + pct(h)/100*pw; }
+
+  // Arc SVG
+  const svg = `<svg width="100%" viewBox="0 0 ${W} ${H+30}" style="max-width:560px;display:block;margin:0 auto">
+    <!-- Background: night -->
+    <rect x="0" y="15" width="${W}" height="${H-20}" rx="8" fill="#0d1829"/>
+    <!-- Civil twilight zones -->
+    <rect x="${pad}" y="15" width="${(tx(cdawn)-pad).toFixed(1)}" height="${H-20}" fill="#1a2e4a" rx="0"/>
+    <rect x="${tx(cdusk).toFixed(1)}" y="15" width="${(pad+pw-tx(cdusk)).toFixed(1)}" height="${H-20}" fill="#1a2e4a" rx="0"/>
+    <!-- Daylight zone -->
+    <rect x="${tx(sr).toFixed(1)}" y="15" width="${(tx(ss)-tx(sr)).toFixed(1)}" height="${H-20}" fill="#1e3a5f"/>
+    <!-- Solar arc gradient overlay -->
+    <defs><linearGradient id="sunGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0"/>
+      <stop offset="30%" stop-color="#f59e0b" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#f59e0b" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </linearGradient></defs>
+    <rect x="${tx(sr).toFixed(1)}" y="15" width="${(tx(ss)-tx(sr)).toFixed(1)}" height="${H-20}" fill="url(#sunGrad)"/>
+    <!-- Time axis -->
+    ${[0,3,6,9,12,15,18,21,24].map(h=>`
+      <line x1="${tx(h).toFixed(1)}" y1="${H-5}" x2="${tx(h).toFixed(1)}" y2="${H+5}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+      <text x="${tx(h).toFixed(1)}" y="${H+18}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.4)" font-family="monospace">${String(h).padStart(2,'0')}:00</text>`).join('')}
+    <!-- Civil twilight markers -->
+    <line x1="${tx(cdawn).toFixed(1)}" y1="15" x2="${tx(cdawn).toFixed(1)}" y2="${H-5}" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="3 2"/>
+    <line x1="${tx(cdusk).toFixed(1)}" y1="15" x2="${tx(cdusk).toFixed(1)}" y2="${H-5}" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="3 2"/>
+    <!-- Sunrise/sunset markers -->
+    <line x1="${tx(sr).toFixed(1)}" y1="15" x2="${tx(sr).toFixed(1)}" y2="${H-5}" stroke="#f59e0b" stroke-width="2.5"/>
+    <polygon points="${tx(sr).toFixed(1)},15 ${(tx(sr)-5).toFixed(1)},7 ${(tx(sr)+5).toFixed(1)},7" fill="#f59e0b"/>
+    <line x1="${tx(ss).toFixed(1)}" y1="15" x2="${tx(ss).toFixed(1)}" y2="${H-5}" stroke="#f59e0b" stroke-width="2.5"/>
+    <polygon points="${tx(ss).toFixed(1)},15 ${(tx(ss)-5).toFixed(1)},7 ${(tx(ss)+5).toFixed(1)},7" fill="#f59e0b"/>
+    <!-- Labels -->
+    <text x="${tx(cdawn).toFixed(1)}" y="12" text-anchor="middle" font-size="8" fill="#93c5fd" font-family="monospace">✦ ${fmt(cdawn)}</text>
+    <text x="${tx(sr).toFixed(1)}" y="12" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="monospace" font-weight="bold">☀ ${fmt(sr)}</text>
+    <text x="${tx(ss).toFixed(1)}" y="12" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="monospace" font-weight="bold">☀ ${fmt(ss)}</text>
+    <text x="${tx(cdusk).toFixed(1)}" y="12" text-anchor="middle" font-size="8" fill="#93c5fd" font-family="monospace">✦ ${fmt(cdusk)}</text>
+    <!-- Now marker -->
+    ${now>=0&&now<=24?`<line x1="${tx(now).toFixed(1)}" y1="10" x2="${tx(now).toFixed(1)}" y2="${H-4}" stroke="#ef4444" stroke-width="2"/>
+    <circle cx="${tx(now).toFixed(1)}" cy="10" r="4" fill="#ef4444"/>
+    <text x="${tx(now).toFixed(1)}" y="${H+18}" text-anchor="middle" font-size="8" fill="#fca5a5" font-family="monospace">AHORA</text>`:''}
+    <!-- Legend -->
+    <rect x="${pad}" y="${H+22}" width="10" height="6" fill="#1a2e4a" rx="1"/>
+    <text x="${pad+12}" y="${H+28}" font-size="8" fill="rgba(255,255,255,0.5)">Crepúsculo civil</text>
+    <rect x="${pad+100}" y="${H+22}" width="10" height="6" fill="#1e3a5f" rx="1"/>
+    <text x="${pad+112}" y="${H+28}" font-size="8" fill="rgba(255,255,255,0.5)">Luz de día</text>
+    <text x="${W-pad}" y="${H+28}" font-size="8" fill="rgba(255,255,255,0.5)" text-anchor="end">UTC · Duración: ${((ss-sr)).toFixed(1)}h</text>
+  </svg>`;
+  return svg;
+}
+
+// ══════════════════════════════════════════════════════════
+// TAF HOURLY EVOLUTION TABLE
+// ══════════════════════════════════════════════════════════
+function parseTafPeriods(tafRaw){
+  if(!tafRaw) return [];
+  const periods = [];
+  const lines = tafRaw.replace(/\n/g,' ').split(/\b(TEMPO|BECMG|FM|PROB\d{2}\s+TEMPO|PROB\d{2})\b/);
+  let base = {};
+
+  // Parse main line
+  const mainMatch = tafRaw.match(/\d{6}Z\s+(\d{4}\/\d{4})/);
+  if(mainMatch){
+    const validity = mainMatch[1];
+    const [fromStr, toStr] = validity.split('/');
+    base.from = parseInt(fromStr.substring(0,2));
+    base.to = parseInt(toStr.substring(0,2));
+  }
+
+  // Extract all segments
+  const rawTaf = tafRaw.toUpperCase();
+  const segmentRe = /(FM\d{6}|TEMPO\s+\d{4}\/\d{4}|BECMG\s+\d{4}\/\d{4}|PROB\d{2}\s+TEMPO\s+\d{4}\/\d{4})/g;
+  const matches = [...rawTaf.matchAll(segmentRe)];
+
+  // Parse each segment
+  function parseSegment(txt){
+    const seg = {};
+    const windMatch = txt.match(/(\d{3}|VRB)(\d{2,3})(G(\d{2,3}))?KT/);
+    if(windMatch){ seg.wdir=windMatch[1]; seg.wspd=parseInt(windMatch[2]); if(windMatch[4]) seg.wgst=parseInt(windMatch[4]); }
+    const visMatch = txt.match(/\b(\d{4})\b/);
+    if(visMatch) seg.vis = parseInt(visMatch[1]);
+    const cldMatch = txt.match(/(SKC|NSC|CAVOK|FEW\d{3}|SCT\d{3}|BKN\d{3}|OVC\d{3})/g);
+    if(cldMatch) seg.clouds = cldMatch;
+    const wxMatch = txt.match(/(-|\+|VC)?(TS|RA|DZ|SN|FG|BR|HZ|FZ|SH|GR|GS|IC)+/g);
+    if(wxMatch) seg.wx = wxMatch.join(' ');
+    return seg;
+  }
+
+  // Build period array (last 24h in 3h buckets)
+  const now = new Date();
+  const periods24 = [];
+  for(let h=0; h<24; h+=3){
+    periods24.push({ h, label: String(h).padStart(2,'0')+':00', cat:'UNK', wind:'—', vis:'—', cloud:'—', wx:'', type:'base' });
+  }
+
+  return periods24;
+}
+
+function buildTafTable(tafRaw, metarRaw){
+  if(!tafRaw) return '<div class="empty">Sin TAF disponible</div>';
+  const raw = tafRaw.toUpperCase();
+
+  // Simple extraction: find each change group
+  const changeGroups = [];
+  const allText = raw.replace(/\n|\r/g,' ');
+
+  // Initial conditions from first line
+  function extractCond(txt){
+    const cond = {};
+    const w = txt.match(/\b(\d{3}|VRB)(\d{2,3})(G(\d{2,3}))?KT\b/);
+    if(w){ cond.wdir=w[1]; cond.wspd=parseInt(w[2]); if(w[4])cond.wgst=parseInt(w[4]); }
+    const v = txt.match(/\b(CAVOK|(\d{4}))\b/);
+    if(v){ cond.vis = v[1]==='CAVOK'?10000:parseInt(v[2]); }
+    const cx = txt.match(/(SKC|NSC|CAVOK|FEW(\d{3})|SCT(\d{3})|BKN(\d{3})|OVC(\d{3}))/g);
+    if(cx) cond.clouds=cx;
+    const wx = txt.match(/(-|\+)?(RA|DZ|SN|FG|BR|HZ|TSRA|TS|SH\w*|FZ\w*|GR)/g);
+    if(wx) cond.wx=wx.join(' ');
+    return cond;
+  }
+
+  function catFromCond(c){
+    if(!c.vis && !c.clouds) return 'UNK';
+    const vis = c.vis ? c.vis*1.60934/1000 : 99; // convert to km
+    const ceil = c.clouds ? Math.min(...(c.clouds.filter(s=>/BKN|OVC/.test(s)).map(s=>parseInt(s.replace(/[A-Z]/g,''))*100)||[9999])) : 9999;
+    if(ceil<500||vis<1.6)return'LIFR';
+    if(ceil<1000||vis<4.8)return'IFR';
+    if(ceil<3000||vis<8)return'MVFR';
+    return'VFR';
+  }
+
+  // Find all FM, TEMPO, BECMG lines
+  const fmRe = /FM(\d{2})(\d{2})(\d{2})\s+([\s\S]*?)(?=FM\d{6}|TEMPO\s+\d{4}|BECMG\s+\d{4}|PROB\d{2}|$)/g;
+  const tempoRe = /(PROB\d{2}\s+)?TEMPO\s+(\d{2})(\d{2})\/(\d{2})(\d{2})\s+([\s\S]*?)(?=FM\d{6}|TEMPO\s+\d{4}|BECMG\s+\d{4}|PROB\d{2}|$)/g;
+  const becmgRe = /BECMG\s+(\d{2})(\d{2})\/(\d{2})(\d{2})\s+([\s\S]*?)(?=FM\d{6}|TEMPO\s+\d{4}|BECMG\s+\d{4}|PROB\d{2}|$)/g;
+
+  const groups = [];
+  let fm;
+  while((fm=fmRe.exec(allText))!==null){
+    const cond=extractCond(fm[4]);
+    groups.push({type:'FM',fromH:parseInt(fm[1]),label:`FM ${fm[1]}:${fm[2]}`,cond,cat:catFromCond(cond)});
+  }
+  let tp;
+  while((tp=tempoRe.exec(allText))!==null){
+    const cond=extractCond(tp[6]);
+    groups.push({type:'TEMPO',fromH:parseInt(tp[2]),toH:parseInt(tp[4]),label:`TEMPO ${tp[2]}:00–${tp[4]}:00`,cond,cat:catFromCond(cond)});
+  }
+  let bc;
+  while((bc=becmgRe.exec(allText))!==null){
+    const cond=extractCond(bc[5]);
+    groups.push({type:'BECMG',fromH:parseInt(bc[1]),toH:parseInt(bc[3]),label:`BECMG ${bc[1]}:00→${bc[3]}:00`,cond,cat:catFromCond(cond)});
+  }
+
+  if(!groups.length) return `
+    <div class="info-box">
+      <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>
+      TAF sin grupos de cambio identificados. El tiempo se prevé estable durante el período de validez.
+    </div>
+    <div class="metar-raw" style="margin-top:8px">${tafRaw}</div>`;
+
+  const catCls = {VFR:'cat-vfr',MVFR:'cat-mvfr',IFR:'cat-ifr',LIFR:'cat-lifr',UNK:'cat-unk'};
+
+  let html = `<div style="overflow-x:auto"><table class="navlog-table" style="width:100%">
+    <thead><tr>
+      <th>Período</th><th>Tipo</th><th>Cat.</th>
+      <th>Viento</th><th>Visibilidad</th><th>Nubes</th><th>Fenómenos</th>
+    </tr></thead><tbody>`;
+
+  groups.forEach(g=>{
+    const wind = g.cond.wdir ? `${g.cond.wdir}/${g.cond.wspd}kt${g.cond.wgst?'G'+g.cond.wgst+'kt':''}` : '—';
+    const visKm = g.cond.vis ? (g.cond.vis*1.60934/1000).toFixed(1)+' km' : '—';
+    const cloud = g.cond.clouds ? g.cond.clouds.join(' ') : '—';
+    const typeBadge = g.type==='TEMPO'
+      ? `<span style="background:#fde68a;color:#854d0e;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">TEMPO</span>`
+      : g.type==='BECMG'
+      ? `<span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">BECMG</span>`
+      : `<span style="background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">FM</span>`;
+    html += `<tr>
+      <td class="mono" style="white-space:nowrap;font-size:11px">${g.label}</td>
+      <td>${typeBadge}</td>
+      <td><span class="cat ${catCls[g.cat]||'cat-unk'}">${g.cat}</span></td>
+      <td class="mono" style="font-size:11px">${wind}</td>
+      <td class="mono" style="font-size:11px">${visKm}</td>
+      <td class="mono" style="font-size:11px">${cloud}</td>
+      <td class="mono" style="font-size:11px;color:var(--ifr)">${g.cond.wx||'—'}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════
+// ENHANCED AERODROME DISPLAY — inject all visual features
+// ══════════════════════════════════════════════════════════
+const __rawSearchAptFinal = searchApt;
+searchApt = async function(){
+  const icao = (document.getElementById('apt-search').value||'').trim().toUpperCase().slice(0,4);
+  if(icao && icao.length>=3) addToHistory('apt',{icao});
+
+  const res = document.getElementById('apt-result');
+  res.innerHTML = '<div class="loading"><div class="spinner"></div>Obteniendo datos de ' + icao + '...</div>';
+  const [m, t, notams] = await Promise.all([fetchMetar(icao), fetchTaf(icao), fetchNotamsApi(icao)]);
+  res.innerHTML = '';
+
+  const apt = getAirport(icao);
+  const cat = flightCat(m);
+  const aip = getAIPSource(icao);
+
+  // ── Header ──
+  const wxIcon = getWeatherIcon(m);
+  const wxDesc = m ? decodeMETAR(m) : '';
+  res.innerHTML += `
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div>${wxIcon}</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span class="apt-icao" style="font-size:16px;padding:6px 10px">${icao}</span>
+              <span class="cat ${flightCat(m)==='VFR'?'cat-vfr':flightCat(m)==='MVFR'?'cat-mvfr':flightCat(m)==='IFR'?'cat-ifr':'cat-lifr'}">${cat}</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:2px">${apt ? apt.name : icao}</div>
+            <div style="font-size:12px;color:var(--text3)">${apt ? apt.city + ' — ' + apt.country : ''} · AIP: ${aip.name}</div>
+            ${wxDesc?`<div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5;max-width:500px">${wxDesc}</div>`:''}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="dlMetar('${icao}')">⬇ METAR</button>
+          <button class="btn btn-outline btn-sm" onclick="dlTaf('${icao}')">⬇ TAF</button>
+          <button class="btn btn-outline btn-sm" onclick="dlNotams('${icao}')">⬇ NOTAMs</button>
+          <button class="btn btn-outline btn-sm" onclick="openUrl('${aip.url}')">AIP ↗</button>
+        </div>
+      </div>
+    </div>`;
+
+  // ── Sunrise/Sunset Arc ──
+  if(apt){
+    const sunArc = buildSunriseArc(apt);
+    res.innerHTML += `<div class="card"><div class="card-title">Horas de luz — UTC · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}</div>${sunArc}</div>`;
+  }
+
+  // ── METAR + Runway/Wind Rose in grid ──
+  if(m){
+    const visKm = m.visib ? (m.visib*1.60934).toFixed(1) : '?';
+    const rwyRose = apt ? buildRunwayWindRose(icao, m.wdir, m.wspd, 200) : '';
+    res.innerHTML += `
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">METAR — ${m.obsTime || new Date().toUTCString().slice(0,25)}</div>
+          <div class="metar-raw">${m.rawOb || 'Sin datos'}</div>
+          <div class="metar-decoded">
+            ${m.temp!=null?`<div class="met-param"><div class="met-param-label">Temperatura</div><div class="met-param-val">${m.temp}<span class="met-param-unit">°C</span></div></div>`:''}
+            ${m.dewp!=null?`<div class="met-param"><div class="met-param-label">Rocío</div><div class="met-param-val">${m.dewp}<span class="met-param-unit">°C</span></div></div>`:''}
+            ${m.altim!=null?`<div class="met-param"><div class="met-param-label">QNH</div><div class="met-param-val">${Math.round(m.altim)}<span class="met-param-unit">hPa</span></div></div>`:''}
+            ${m.wdir!=null?`<div class="met-param"><div class="met-param-label">Viento</div><div class="met-param-val">${m.wdir}°/${m.wspd}<span class="met-param-unit">kt</span></div></div>`:''}
+            ${m.wgst!=null?`<div class="met-param"><div class="met-param-label">Rachas</div><div class="met-param-val">${m.wgst}<span class="met-param-unit">kt</span></div></div>`:''}
+            ${m.visib!=null?`<div class="met-param"><div class="met-param-label">Visibilidad</div><div class="met-param-val">${visKm}<span class="met-param-unit">km</span></div></div>`:''}
+            ${m.ceil!=null?`<div class="met-param"><div class="met-param-label">Techo</div><div class="met-param-val">${m.ceil}<span class="met-param-unit">ft</span></div></div>`:''}
+          </div>
+        </div>
+        ${rwyRose?`<div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="card-title" style="align-self:flex-start">Orientación de pistas y viento</div>
+          ${rwyRose}
+        </div>`:''}
+      </div>`;
+  } else {
+    res.innerHTML += `<div class="card"><div class="empty">Sin datos METAR para ${icao}.</div></div>`;
+  }
+
+  // ── TAF + Evolution table ──
+  if(t){
+    const tafEvol = buildTafTable(t.rawTAF);
+    res.innerHTML += `
+      <div class="card">
+        <div class="card-title">TAF — Pronóstico y evolución esperada</div>
+        <div class="metar-raw" style="margin-bottom:12px">${t.rawTAF||'Sin datos'}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Evolución por períodos</div>
+        ${tafEvol}
+      </div>`;
+  }
+
+  // ── ATIS ──
+  res.innerHTML += `
+    <div class="card">
+      <div class="card-title">ATIS / D-ATIS</div>
+      <div class="info-box">
+        <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>
+        ATIS audio por radio VHF en la frecuencia publicada en el AIP.
+        D-ATIS digital: <a href="https://www.eurocontrol.int/service/d-atis" target="_blank" style="color:var(--amber)">Eurocontrol D-ATIS ↗</a>
+      </div>
+    </div>`;
+
+  // ── Mini map ──
+  if(apt){
+    const mapId = 'minimap_' + icao;
+    res.innerHTML += `
+      <div class="card">
+        <div class="card-title">Localización del aeródromo</div>
+        <div id="${mapId}" style="height:240px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border)"></div>
+      </div>`;
+    // Init mini-map after render
+    setTimeout(()=>{
+      loadLeaflet(()=>{
+        const miniMap = L.map(mapId,{zoomControl:true,scrollWheelZoom:false}).setView([apt.lat,apt.lon],12);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM &copy; CARTO',maxZoom:18,subdomains:'abcd'}).addTo(miniMap);
+        const icon = L.divIcon({html:`<div style="background:#F59E0B;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4)"></div>`,className:'',iconSize:[22,22],iconAnchor:[11,11]});
+        L.marker([apt.lat,apt.lon],{icon}).addTo(miniMap).bindPopup(`<strong>${icao}</strong><br>${apt.name}`).openPopup();
+        // Draw runway lines
+        const rwys = RUNWAY_DATA[icao] || [];
+        rwys.forEach(rwy=>{
+          const rad = rwy.hdg * Math.PI/180;
+          const len = 0.008; // ~800m in degrees
+          const p1 = [apt.lat - len*Math.cos(rad), apt.lon - len*Math.sin(rad)];
+          const p2 = [apt.lat + len*Math.cos(rad), apt.lon + len*Math.sin(rad)];
+          L.polyline([p1,p2],{color:'#1a1a1a',weight:8,opacity:.9}).addTo(miniMap);
+          L.polyline([p1,p2],{color:'white',weight:2,dashArray:'6 5'}).addTo(miniMap);
+        });
+        // Wind arrow marker
+        if(m && m.wdir!=null && m.wdir>0){
+          const wRad = m.wdir*Math.PI/180;
+          const wOff = 0.015;
+          const from = [apt.lat - wOff*Math.cos(wRad), apt.lon - wOff*Math.sin(wRad)];
+          const to = [apt.lat, apt.lon];
+          L.polyline([from,to],{color:'#22c55e',weight:3,opacity:.8}).addTo(miniMap);
+        }
+      });
+    }, 300);
+  }
+
+  // ── NOTAMs ──
+  const notamEl = document.createElement('div');
+  notamEl.className = 'card';
+  notamEl.innerHTML = `<div class="card-title">NOTAMs activos — ${icao} (${notams.length})</div>`;
+  if(notams.length){
+    const limit = isPro ? notams.length : Math.min(3, notams.length);
+    notams.slice(0,limit).forEach(n=>{
+      const text = n.notam?.text || n.rawNotam || JSON.stringify(n);
+      const isHigh = /RWY|ILS|CLSD|CLOSED|UNSERVICEABLE/.test(text);
+      const isMed = /NAV|FREQ|TWR|ATIS|GPS/.test(text);
+      const sev = isHigh?'crit':isMed?'warn':'info';
+      const d = document.createElement('div');
+      d.className=`notam-item ${sev}`;
+      d.innerHTML=`<div class="notam-meta"><span class="notam-id">${n.notam?.id||'NOTAM'}</span><span class="notam-sev ${sev}">${sev==='crit'?'CRÍTICO':sev==='warn'?'AVISO':'INFO'}</span></div><div class="notam-text">${text.substring(0,350)}${text.length>350?'...':''}</div>`;
+      notamEl.appendChild(d);
+    });
+    if(!isPro && notams.length>3){
+      notamEl.innerHTML+=`<div class="gate-cta"><h3>+${notams.length-3} NOTAMs más</h3><p>Plan Pro para acceso ilimitado.</p><button class="btn btn-primary" onclick="showTab('precios')">Ver planes</button></div>`;
+    } else {
+      const db=document.createElement('button');db.className='btn btn-outline btn-sm';db.style.marginTop='8px';
+      db.textContent=`Descargar todos (${notams.length})`;db.onclick=()=>dlNotams(icao);
+      notamEl.appendChild(db);
+    }
+  } else {
+    notamEl.innerHTML+=`<div class="empty">Sin NOTAMs activos para ${icao}</div>`;
+  }
+  res.appendChild(notamEl);
+
+  // ── Frequencies & Runways ──
+  renderFreqsAndRunways(icao, res);
+};
+
+
+
+// ══════════════════════════════════════════════════════════
+// WINDS ALOFT — aviationweather.gov API
+// ══════════════════════════════════════════════════════════
+async function loadWindsAloft(){
+  const level = document.getElementById('winds-level')?.value || '700';
+  const region = document.getElementById('winds-region')?.value || 'eur';
+  const el = document.getElementById('winds-result');
+  const dlEl = document.getElementById('winds-dl-btns');
+  if(!el) return;
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Consultando vientos en altura...</div>';
+
+  try{
+    // Fetch wind/temp data for European key stations
+    const euStations = 'LEMD,LEBL,LFPG,EDDF,EDDM,EGLL,LIRF,EHAM,LSZH,LOWW,EKCH,ESSA,ENGM,EFHK,EPWA,LKPR,LHBP,LROP,LGAV,LPPT';
+    const url = `https://aviationweather.gov/api/data/windtemp?region=${region}&fcst=06&level=${level}h&format=json`; // level e.g. 850, 700, 500
+    const d = await apiFetch(url);
+
+    if(d && Array.isArray(d) && d.length){
+      const stationMap = {
+        'LEMD':'Madrid','LEBL':'Barcelona','LFPG':'París','EDDF':'Frankfurt',
+        'EDDM':'Munich','EGLL':'Londres','LIRF':'Roma','EHAM':'Amsterdam',
+        'LSZH':'Zurich','LOWW':'Viena','EKCH':'Copenhagen','ESSA':'Estocolmo',
+        'ENGM':'Oslo','EFHK':'Helsinki','EPWA':'Varsovia','LKPR':'Praga',
+        'LHBP':'Budapest','LROP':'Bucarest','LGAV':'Atenas','LPPT':'Lisboa',
+      };
+
+      // Build table
+      let html = `<div style="overflow-x:auto;margin-top:8px"><table class="navlog-table">
+        <thead><tr>
+          <th>Estación</th><th>Ciudad</th><th>Nivel</th>
+          <th>Dirección</th><th>Velocidad</th><th>Temperatura</th><th>Observación</th>
+        </tr></thead><tbody>`;
+
+      d.slice(0,20).forEach(s=>{
+        const windDir = s.wdir != null ? `${String(s.wdir*10||0).padStart(3,'0')}°` : '—';
+        const windSpd = s.wspd != null ? `${s.wspd} kt` : '—';
+        const temp = s.temp != null ? `${s.temp}°C` : '—';
+        const note = s.wspd > 80 ? '⚠ Corriente en chorro' : s.wspd > 50 ? '↑ Viento fuerte' : '';
+        const spdColor = s.wspd > 80 ? 'var(--ifr)' : s.wspd > 50 ? 'var(--mvfr)' : 'inherit';
+        html += `<tr>
+          <td class="mono" style="font-weight:700">${s.stationId||'—'}</td>
+          <td style="font-size:12px;color:var(--text3)">${stationMap[s.stationId]||''}</td>
+          <td class="mono">${level} hPa</td>
+          <td class="mono">${windDir}</td>
+          <td class="mono" style="color:${spdColor};font-weight:${s.wspd>50?'700':'400'}">${windSpd}</td>
+          <td class="mono">${temp}</td>
+          <td style="font-size:11px;color:var(--text3)">${note}</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+
+      // Add download button
+      el.innerHTML = html;
+      if(dlEl){
+        dlEl.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline btn-sm';
+        btn.textContent = '⬇ Descargar vientos en altura (.txt)';
+        btn.onclick = ()=>{
+          const txt = `VIENTOS Y TEMPERATURA EN ALTURA\nNivel: ${level} hPa\nGenerado: ${new Date().toUTCString()}\n\n` +
+            d.map(s=>`${s.stationId||''}\tDIR:${s.wdir!=null?s.wdir*10+'°':'—'}\tVEL:${s.wspd||'—'} kt\tTEMP:${s.temp||'—'}°C`).join('\n');
+          downloadTxt(`winds_${level}hPa_${Date.now()}.txt`, txt);
+        };
+        dlEl.appendChild(btn);
+
+        const btn2 = document.createElement('button');
+        btn2.className = 'btn btn-outline btn-sm';
+        btn2.textContent = '↗ Ver en Aviation Weather Center';
+        btn2.onclick = ()=> openUrl(`https://aviationweather.gov/windtemp/?region=${region}&level=${level}h`);
+        dlEl.appendChild(btn2);
+      }
+    } else {
+      // Fallback: show iframe from AWC
+      el.innerHTML = `
+        <div class="warn-box" style="margin-bottom:10px">
+          <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>
+          API de vientos en altura no devolvió datos en formato JSON. Accede directamente a la fuente oficial:
+        </div>
+        <iframe src="https://aviationweather.gov/windtemp/?region=${region}&level=${level}h" 
+          style="width:100%;height:400px;border:1px solid var(--border);border-radius:var(--radius-sm)" 
+          title="Vientos en altura AWC"></iframe>`;
+    }
+  } catch(e) {
+    el.innerHTML = `
+      <div class="warn-box" style="margin-bottom:10px">
+        <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>
+        Error al cargar datos. Accede directamente a Aviation Weather Center:
+      </div>
+      <iframe src="https://aviationweather.gov/windtemp/?region=eur&level=700h" 
+        style="width:100%;height:400px;border:1px solid var(--border);border-radius:var(--radius-sm)"
+        title="Vientos en altura"></iframe>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// APPROACH CHARTS & OFFICIAL DOCUMENTS LINKS
+// ══════════════════════════════════════════════════════════
+function loadDocLinks(){
+  const icao = (document.getElementById('doc-icao')?.value||'').trim().toUpperCase();
+  if(!icao || icao.length<3){ showToast('Introduce un código ICAO válido','warn'); return; }
+  const apt = getAirport(icao);
+  const aip = getAIPSource(icao);
+  const prefix = icao.substring(0,2);
+  const el = document.getElementById('doc-links-result');
+
+  // Build country-specific direct links
+  const links = buildCountryDocLinks(icao, prefix, aip);
+
+  el.innerHTML = `
+    <div style="margin-top:14px">
+      <div class="airport-row" style="margin-bottom:12px">
+        <span class="apt-icao dep">${icao}</span>
+        <span style="font-size:13px;font-weight:600">${apt?apt.name:icao}</span>
+        <span style="font-size:12px;color:var(--text3)">Fuente: ${aip.name}</span>
+      </div>
+      <div class="section-sep">Cartas y procedimientos (${aip.country})</div>
+      <div class="dl-grid">
+        ${links.map(l=>`
+          <button class="btn-dl link" onclick="openUrl('${l.url}')">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M10 1h5v5l-1.8-1.8-4.5 4.5-1.4-1.4 4.5-4.5L10 1zM6 2H2v12h12v-4h-1.5v2.5h-9V3.5"/></svg>
+            ${l.label}
+          </button>`).join('')}
+      </div>
+      <div class="info-box" style="margin-top:12px">
+        <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>
+        Las cartas de aproximación Jeppesen requieren suscripción. Las cartas oficiales del Estado son gratuitas en el AIP pero no tienen descarga automatizada directa sin acuerdo de licencia con la autoridad aeronáutica. Se abre la sección correcta del eAIP.
+      </div>
+    </div>`;
+}
+
+function buildCountryDocLinks(icao, prefix, aip){
+  const enaire_base = `https://aip.enaire.es/AIP/`;
+  const ead_base = `https://www.ead.eurocontrol.int/`;
+
+  const commonLinks = [
+    { label: `AIP ${icao} — Información de aeródromo`, url: aip.url },
+    { label: `NOTAMs ${icao} — EAD Basic`, url: `https://www.ead.eurocontrol.int/cms-eadbasic/opencms/en/navaid-information/?icao=${icao}` },
+    { label: `PIB preflight (EAD)`, url: `https://www.ead.eurocontrol.int/` },
+  ];
+
+  const countryLinks = {
+    'LE': [
+      { label: `AD 2 ${icao} — Ficha aeródromo ENAIRE`, url: `${enaire_base}AIPS/AIP_AIRAC_EFFECTIVE/AD/AD2/${icao}/LE_AD_2_${icao}_en.pdf` },
+      { label: `Carta aeródromo (AD)`, url: `${enaire_base}AIPS/AIP_AIRAC_EFFECTIVE/AD/AD2/${icao}/LE_AD_2_${icao}_10_AD.pdf` },
+      { label: `Aproximación ILS`, url: `${enaire_base}AIPS/AIP_AIRAC_EFFECTIVE/AD/AD2/${icao}/LE_AD_2_${icao}_20_IAC_ILS.pdf` },
+      { label: `Aproximación VOR/NDB`, url: `${enaire_base}AIPS/AIP_AIRAC_EFFECTIVE/AD/AD2/${icao}/LE_AD_2_${icao}_21_IAC_VOR.pdf` },
+      { label: `SID — Salidas normalizadas`, url: `${enaire_base}AIPS/AIP_AIRAC_EFFECTIVE/AD/AD2/${icao}/LE_AD_2_${icao}_24_SID.pdf` },
+      { label: `STAR — Llegadas normalizadas`, url: `${enaire_base}AIPS/AIP_AIRAC_EFFECTIVE/AD/AD2/${icao}/LE_AD_2_${icao}_23_STAR.pdf` },
+      { label: `ENAIRE AIP completo`, url: enaire_base },
+    ],
+    'GC': [
+      { label: `AD 2 ${icao} — Ficha aeródromo ENAIRE (Canarias)`, url: enaire_base },
+      { label: `ENAIRE AIP Canarias`, url: enaire_base },
+    ],
+    'EG': [
+      { label: `eAIP NATS — AD 2 ${icao}`, url: `https://www.aurora.nats.co.uk/htmlAIP/Publications/current-AIRAC/html/eAIP/EG-AD-2-${icao}-en-GB.html` },
+      { label: `Approach Charts — NATS`, url: `https://www.aurora.nats.co.uk/htmlAIP/Publications/current-AIRAC/html/eAIP/EG-AD-2-${icao}-en-GB.html#${icao}-AD-2.24` },
+      { label: `SID — UK AIP`, url: `https://www.aurora.nats.co.uk/htmlAIP/Publications/current-AIRAC/html/eAIP/EG-AD-2-${icao}-en-GB.html` },
+    ],
+    'LF': [
+      { label: `SIA France — AD ${icao}`, url: `https://www.sia.aviation-civile.gouv.fr/produits-information-aeronautique/aide-la-navigation/aip/aip-france-oaci.html` },
+      { label: `Cartas VAC — SIA`, url: `https://www.sia.aviation-civile.gouv.fr/` },
+    ],
+    'ED': [
+      { label: `DFS eAIP — AD 2 ${icao}`, url: `https://aip.dfs.de/basicIFR/` },
+      { label: `Cartas aproximación DFS`, url: `https://aip.dfs.de/basicIFR/` },
+    ],
+    'LI': [
+      { label: `ENAV Italy — AIP`, url: `https://www.enav.it/en/services/aeronautical-information.html` },
+    ],
+    'LP': [
+      { label: `NAV Portugal — AIP`, url: `https://www.nav.pt/en/aeronautical-information` },
+    ],
+    'LO': [
+      { label: `Austro Control — eAIP`, url: `https://eaip.austro.control.at/` },
+    ],
+    'EH': [
+      { label: `LVNL eAIP — Países Bajos`, url: `https://www.lvnl.nl/eaip/` },
+    ],
+    'LS': [
+      { label: `Skyguide — Swiss AIP`, url: `https://www.skybriefing.com/` },
+    ],
+  };
+
+  const specific = countryLinks[prefix] || [];
+  return [...specific, ...commonLinks];
+}
+
+// ══════════════════════════════════════════════════════════
+// BULK METEOROLOGY DOWNLOAD
+// ══════════════════════════════════════════════════════════
+async function dlMetBulk(type){
+  const raw = document.getElementById('dl-met-icaos')?.value || '';
+  const icaos = raw.split(/[,;\s]+/).map(s=>s.trim().toUpperCase()).filter(s=>s.length>=3);
+  if(!icaos.length && type!=='sigmet' && type!=='pirep' && type!=='winds'){
+    showToast('Introduce al menos un código ICAO','warn'); return;
+  }
+
+  showToast('Descargando ' + type.toUpperCase() + '...','success');
+  let content = `PREFLIGHT PRO — ${type.toUpperCase()}\nGenerado: ${new Date().toUTCString()}\n${'═'.repeat(60)}\n\n`;
+
+  try{
+    if(type === 'metar'){
+      for(const icao of icaos){
+        const m = await fetchMetar(icao);
+        content += `--- ${icao} ---\n${m?m.rawOb:'Sin datos'}\n${m?decodeMETAR(m):''}\n\n`;
+      }
+    } else if(type === 'taf'){
+      for(const icao of icaos){
+        const t = await fetchTaf(icao);
+        content += `--- ${icao} ---\n${t?t.rawTAF:'Sin datos'}\n\n`;
+      }
+    } else if(type === 'notam'){
+      for(const icao of icaos){
+        const n = await fetchNotamsApi(icao);
+        content += `--- NOTAMs ${icao} (${n.length}) ---\n`;
+        n.forEach(x=>content+=`${x.notam?.text||JSON.stringify(x)}\n---\n`);
+        if(!n.length) content += 'Sin NOTAMs activos\n';
+        content += '\n';
+      }
+    } else if(type === 'sigmet'){
+      const s = await fetchSigmets();
+      content += `SIGMETs activos: ${s.length}\n\n`;
+      s.forEach(x=>content+=`${x.rawAirSigmet||JSON.stringify(x)}\n\n`);
+    } else if(type === 'pirep'){
+      const p = await fetchPireps();
+      content += `PIREPs recientes: ${p.length}\n\n`;
+      p.forEach(x=>content+=`${x.rawOb||JSON.stringify(x)}\n\n`);
+    } else if(type === 'winds'){
+      const d = await apiFetch(`https://aviationweather.gov/api/data/windtemp?region=eur&fcst=06&level=700h&format=json`);
+      content += `Vientos en altura 700 hPa (FL100)\n\n`;
+      if(d && Array.isArray(d)) d.forEach(s=>content+=`${s.stationId}\tDIR:${s.wdir!=null?s.wdir*10+'°':'—'}\tVEL:${s.wspd||'—'}kt\tTEMP:${s.temp||'—'}°C\n`);
+    } else if(type === 'full'){
+      content += 'PAQUETE COMPLETO DE BRIEFING\n\n';
+      for(const icao of (icaos.length?icaos:['LEMD'])){
+        const [m,t,n] = await Promise.all([fetchMetar(icao),fetchTaf(icao),fetchNotamsApi(icao)]);
+        content += `${'═'.repeat(50)}\n${icao}\n${'═'.repeat(50)}\n`;
+        content += `METAR:\n${m?m.rawOb:'Sin datos'}\n${m?decodeMETAR(m):''}\n\n`;
+        content += `TAF:\n${t?t.rawTAF:'Sin datos'}\n\n`;
+        content += `NOTAMs (${n.length}):\n`;
+        n.slice(0,10).forEach(x=>content+=`${x.notam?.text||''}\n`);
+        content += '\n';
+      }
+      const s = await fetchSigmets();
+      content += `${'═'.repeat(50)}\nSIGMETs activos: ${s.length}\n${'═'.repeat(50)}\n`;
+      s.forEach(x=>content+=`${x.rawAirSigmet||''}\n\n`);
+    }
+
+    downloadTxt(`preflight_${type}_${Date.now()}.txt`, content);
+  } catch(e){
+    showToast('Error en la descarga: ' + e.message,'err');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// HISTORICAL WEATHER — OpenMeteo ERA5 (free, no key)
+// ══════════════════════════════════════════════════════════
+async function loadHistWx(){
+  const icao = (document.getElementById('histwx-icao')?.value||'').trim().toUpperCase();
+  const fromY = parseInt(document.getElementById('histwx-from')?.value)||2015;
+  const toY = parseInt(document.getElementById('histwx-to')?.value)||2024;
+  const el = document.getElementById('histwx-result');
+  if(!icao||icao.length<3){showToast('Introduce un ICAO válido','warn');return;}
+  const apt = getAirport(icao);
+  if(!apt){showToast('Aeródromo no encontrado en la base de datos','warn');return;}
+  if(!el)return;
+  el.innerHTML='<div class="loading"><div class="spinner"></div>Descargando datos ERA5 de OpenMeteo...</div>';
+
+  try{
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${apt.lat}&longitude=${apt.lon}&start_date=${fromY}-01-01&end_date=${toY}-12-31&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum,windspeed_10m_max,weathercode&timezone=UTC&models=era5`;
+    const data = await apiFetch(url);
+    if(!data||!data.daily){el.innerHTML='<div class="empty">No se obtuvieron datos históricos</div>';return;}
+
+    // Process: group by year and month
+    const daily = data.daily;
+    const monthly = {}; // {year: {month: {temps:[],precip,wind,codes:[]}}}
+
+    daily.time.forEach((dt,i)=>{
+      const [y,m] = dt.split('-').map(Number);
+      if(!monthly[y]) monthly[y]={};
+      if(!monthly[y][m]) monthly[y][m]={tmax:[],tmin:[],tmean:[],precip:0,wmax:[],codes:[]};
+      const mo = monthly[y][m];
+      if(daily.temperature_2m_max[i]!=null) mo.tmax.push(daily.temperature_2m_max[i]);
+      if(daily.temperature_2m_min[i]!=null) mo.tmin.push(daily.temperature_2m_min[i]);
+      if(daily.temperature_2m_mean[i]!=null) mo.tmean.push(daily.temperature_2m_mean[i]);
+      if(daily.precipitation_sum[i]!=null) mo.precip+=daily.precipitation_sum[i];
+      if(daily.windspeed_10m_max[i]!=null) mo.wmax.push(daily.windspeed_10m_max[i]);
+      if(daily.weathercode[i]!=null) mo.codes.push(daily.weathercode[i]);
+    });
+
+    const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : '—';
+    const max = arr => arr.length ? Math.max(...arr).toFixed(1) : '—';
+    const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+    // Build monthly climatology (average across all years)
+    const clima = {}; // month 1-12
+    for(let m=1;m<=12;m++){
+      const allTmean=[], allPrecip=[], allWind=[], allCodes=[];
+      Object.values(monthly).forEach(yr=>{
+        if(yr[m]){
+          allTmean.push(...yr[m].tmean);
+          allPrecip.push(yr[m].precip);
+          allWind.push(...yr[m].wmax);
+          allCodes.push(...yr[m].codes);
+        }
+      });
+      // Dominant weather code
+      const codeCount={};allCodes.forEach(c=>{codeCount[c]=(codeCount[c]||0)+1;});
+      const domCode = Object.entries(codeCount).sort((a,b)=>b[1]-a[1])[0]?.[0]||0;
+      clima[m]={tmean:avg(allTmean),precip:avg(allPrecip),wind:avg(allWind),domCode:parseInt(domCode)};
+    }
+
+    function wxCodeIcon(code){
+      if(code===0)return'☀';
+      if(code<=2)return'⛅';
+      if(code<=3)return'☁';
+      if(code<=49)return'🌫';
+      if(code<=69)return'🌧';
+      if(code<=79)return'🌨';
+      if(code<=82)return'🌧';
+      if(code<=84)return'🌩';
+      if(code<=99)return'⛈';
+      return'?';
+    }
+
+    // Render table
+    let html = `
+      <div style="font-size:13px;font-weight:600;margin:16px 0 8px">${apt.name} — Climatología ${fromY}–${toY}</div>
+      <div style="overflow-x:auto">
+        <table class="navlog-table" style="min-width:700px">
+          <thead><tr>
+            <th>Mes</th><th>Wx</th>
+            <th>T media (°C)</th><th>Precipitación (mm)</th><th>Viento máx (km/h)</th>
+          </tr></thead><tbody>`;
+
+    for(let m=1;m<=12;m++){
+      const c=clima[m];
+      const tmpColor = parseFloat(c.tmean)>25?'#ef4444':parseFloat(c.tmean)<5?'#60a5fa':'inherit';
+      html+=`<tr>
+        <td style="font-weight:600">${MONTHS[m-1]}</td>
+        <td style="font-size:16px">${wxCodeIcon(c.domCode)}</td>
+        <td class="mono" style="color:${tmpColor}">${c.tmean}</td>
+        <td class="mono">${parseFloat(c.precip).toFixed(0)} mm</td>
+        <td class="mono">${parseFloat(c.wind).toFixed(0)}</td>
+      </tr>`;
+    }
+    html+='</tbody></table></div>';
+
+    // Mini bar chart for temperature (SVG)
+    const tvals = Object.values(clima).map(c=>parseFloat(c.tmean)||0);
+    const tMin=Math.min(...tvals)-2, tMax=Math.max(...tvals)+2;
+    const barW=36, barH=100, gap=4, padL=30, padB=18;
+    const chartW=padL+(barW+gap)*12+gap, chartH=barH+padB+16;
+    let bars='';
+    tvals.forEach((t,i)=>{
+      const pct=(t-tMin)/(tMax-tMin);
+      const bh=Math.max(4,Math.round(pct*barH));
+      const x=padL+(barW+gap)*i;
+      const y=barH-bh+16;
+      const col=t>25?'#ef4444':t>15?'#f59e0b':t>5?'#22c55e':'#60a5fa';
+      bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="${col}" rx="3" opacity=".85"/>`;
+      bars+=`<text x="${x+barW/2}" y="${y-3}" text-anchor="middle" font-size="9" fill="var(--text3)" font-family="monospace">${t.toFixed(0)}°</text>`;
+      bars+=`<text x="${x+barW/2}" y="${chartH-4}" text-anchor="middle" font-size="9" fill="var(--text3)" font-family="monospace">${MONTHS[i].substring(0,1)}</text>`;
+    });
+    html+=`
+      <div style="margin-top:16px;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Temperatura media mensual (°C)</div>
+      <svg width="100%" viewBox="0 0 ${chartW} ${chartH}" style="max-width:${chartW}px">${bars}</svg>`;
+
+    // Precip bars
+    const pvals = Object.values(clima).map(c=>parseFloat(c.precip)||0);
+    const pMax=Math.max(...pvals)+5;
+    let pbars='';
+    pvals.forEach((p,i)=>{
+      const pct=p/pMax;
+      const bh=Math.max(2,Math.round(pct*barH));
+      const x=padL+(barW+gap)*i;
+      const y=barH-bh+16;
+      pbars+=`<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="#60a5fa" rx="3" opacity=".8"/>`;
+      pbars+=`<text x="${x+barW/2}" y="${y-3}" text-anchor="middle" font-size="9" fill="var(--text3)" font-family="monospace">${p.toFixed(0)}</text>`;
+      pbars+=`<text x="${x+barW/2}" y="${chartH-4}" text-anchor="middle" font-size="9" fill="var(--text3)" font-family="monospace">${MONTHS[i].substring(0,1)}</text>`;
+    });
+    html+=`
+      <div style="margin-top:14px;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Precipitación media mensual (mm)</div>
+      <svg width="100%" viewBox="0 0 ${chartW} ${chartH}" style="max-width:${chartW}px">${pbars}</svg>`;
+
+    html+=`<div class="info-box" style="margin-top:12px"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>Datos de reanálisis ERA5 vía <a href="https://open-meteo.com" target="_blank" style="color:var(--amber)">Open-Meteo</a>. API gratuita, sin clave requerida.</div>`;
+
+    el.innerHTML=html;
+    // Download button
+    const dlBtn=document.createElement('button');
+    dlBtn.className='btn btn-outline btn-sm';
+    dlBtn.style.marginTop='12px';
+    dlBtn.textContent=`⬇ Descargar climatología ${icao} (.txt)`;
+    dlBtn.onclick=()=>{
+      let txt=`CLIMATOLOGÍA ${icao} — ${apt.name}\n${fromY}–${toY}\n${'═'.repeat(50)}\n`;
+      txt+=`Mes\tT Media °C\tPrecip mm\tViento km/h\n`;
+      for(let m=1;m<=12;m++){const c=clima[m];txt+=`${MONTHS[m-1]}\t${c.tmean}\t${parseFloat(c.precip).toFixed(0)}\t${parseFloat(c.wind).toFixed(0)}\n`;}
+      downloadTxt(`clima_${icao}_${fromY}_${toY}.txt`,txt);
+    };
+    el.appendChild(dlBtn);
+
+  } catch(e){
+    el.innerHTML=`<div class="warn-box"><svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/></svg>Error al cargar datos históricos: ${e.message}. Comprueba tu conexión.</div>`;
+    console.error(e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// VOR/DME ON MAPS — hardcoded key European navaids
+// ══════════════════════════════════════════════════════════
+// ── OpenAIP API key ──
+const OPENAIP_KEY = 'feddd2d6d233a7a121f1ad3c8a0e6040';
+let openaipNavaidsLoaded = false;
+
+async function fetchOpenAIPNavaids(bounds){
+  // OpenAIP API v2 — navaids endpoint
+  // bounds: {north, south, east, west}
+  if(!bounds) bounds = {north:71,south:35,east:45,west:-25}; // Europe
+  try{
+    const url = `https://api.core.openaip.net/api/navaids?apiKey=${OPENAIP_KEY}&page=1&limit=200&sortBy=name&sortDesc=false`;
+    const r = await fetch(url, { headers: { 'x-openaip-api-key': OPENAIP_KEY } });
+    if(!r.ok) throw new Error('OpenAIP ' + r.status);
+    const d = await r.json();
+    return d.items || d.data || [];
+  } catch(e){
+    console.warn('OpenAIP navaids fetch failed, using built-in list:', e);
+    return [];
+  }
+}
+
+async function fetchOpenAIPAirports(bounds){
+  try{
+    const url = `https://api.core.openaip.net/api/airports?apiKey=${OPENAIP_KEY}&page=1&limit=500&country=ES&sortBy=name&sortDesc=false`;
+    const r = await fetch(url, { headers: { 'x-openaip-api-key': OPENAIP_KEY } });
+    if(!r.ok) throw new Error('OpenAIP airports ' + r.status);
+    const d = await r.json();
+    return d.items || d.data || [];
+  } catch(e){
+    console.warn('OpenAIP airports fetch failed:', e);
+    return [];
+  }
+}
+
+// Fallback built-in navaids (used if OpenAIP API fails)
+const NAVAIDS = [
+  // España
+  {id:'MAD',type:'VOR/DME',lat:40.4936,lon:-3.5670,freq:'114.10',name:'Madrid'},
+  {id:'BCN',type:'VOR/DME',lat:41.2753,lon:2.0854,freq:'114.30',name:'Barcelona'},
+  {id:'VLC',type:'VOR/DME',lat:39.4893,lon:-0.4816,freq:'117.00',name:'Valencia'},
+  {id:'SEV',type:'VOR/DME',lat:37.4230,lon:-5.9783,freq:'114.70',name:'Sevilla'},
+  {id:'MLA',type:'VOR/DME',lat:36.6750,lon:-4.4992,freq:'116.30',name:'Málaga'},
+  {id:'PMI',type:'VOR/DME',lat:39.5517,lon:2.7388,freq:'114.90',name:'Palma'},
+  {id:'BLV',type:'VOR/DME',lat:43.3011,lon:-2.9106,freq:'115.10',name:'Bilbao'},
+  {id:'GRX',type:'VOR/DME',lat:37.1887,lon:-3.7775,freq:'116.90',name:'Granada'},
+  {id:'ZRZ',type:'VOR/DME',lat:41.6662,lon:-1.0415,freq:'115.80',name:'Zaragoza'},
+  {id:'SBD',type:'VOR/DME',lat:43.4271,lon:-3.8200,freq:'117.90',name:'Santander'},
+  {id:'CUV',type:'VOR/DME',lat:40.3706,lon:-3.7886,freq:'115.30',name:'Cuatro Vientos'},
+  // Canarias
+  {id:'GCN',type:'VOR/DME',lat:27.9319,lon:-15.3866,freq:'116.50',name:'Gran Canaria'},
+  {id:'TFN',type:'VOR/DME',lat:28.4827,lon:-16.3415,freq:'116.70',name:'Tenerife Norte'},
+  // UK
+  {id:'LON',type:'VOR/DME',lat:51.4775,lon:-0.4614,freq:'113.60',name:'London'},
+  {id:'BNN',type:'VOR/DME',lat:51.6508,lon:-0.1794,freq:'113.75',name:'Bovingdon'},
+  {id:'SAM',type:'VOR/DME',lat:50.9600,lon:-1.3328,freq:'113.35',name:'Southampton'},
+  {id:'MCT',type:'VOR/DME',lat:53.3537,lon:-2.2749,freq:'113.55',name:'Manchester'},
+  // France
+  {id:'PGS',type:'VOR/DME',lat:48.9739,lon:2.3464,freq:'115.35',name:'Paris-CDG'},
+  {id:'ORL',type:'VOR/DME',lat:47.9878,lon:1.7606,freq:'115.25',name:'Orléans'},
+  {id:'LMG',type:'VOR/DME',lat:43.6293,lon:1.3638,freq:'113.40',name:'Toulouse'},
+  {id:'MRM',type:'VOR/DME',lat:43.4393,lon:5.2214,freq:'115.70',name:'Marseille'},
+  // Germany
+  {id:'FFM',type:'VOR/DME',lat:50.0525,lon:8.5703,freq:'114.20',name:'Frankfurt'},
+  {id:'MUN',type:'VOR/DME',lat:48.1783,lon:11.8397,freq:'112.30',name:'Munich'},
+  {id:'BER',type:'VOR/DME',lat:52.3667,lon:13.5033,freq:'115.70',name:'Berlin'},
+  {id:'HAM',type:'VOR/DME',lat:53.6286,lon:10.0019,freq:'113.10',name:'Hamburg'},
+  // Italy
+  {id:'ROM',type:'VOR/DME',lat:41.8003,lon:12.2389,freq:'114.90',name:'Roma'},
+  {id:'MIL',type:'VOR/DME',lat:45.6306,lon:8.7281,freq:'116.70',name:'Milano'},
+  {id:'VEN',type:'VOR/DME',lat:45.5053,lon:12.3519,freq:'115.00',name:'Venezia'},
+  // Netherlands
+  {id:'PAM',type:'VOR/DME',lat:52.3086,lon:4.7639,freq:'115.20',name:'Schiphol'},
+  // Belgium
+  {id:'BUB',type:'VOR/DME',lat:50.9014,lon:4.4844,freq:'114.60',name:'Brussels'},
+  // Switzerland
+  {id:'ZUE',type:'VOR/DME',lat:47.4647,lon:8.5492,freq:'116.90',name:'Zurich'},
+  // Austria
+  {id:'VIE',type:'VOR/DME',lat:48.1103,lon:16.5697,freq:'116.20',name:'Vienna'},
+  // Portugal
+  {id:'LIS',type:'VOR/DME',lat:38.7813,lon:-9.1359,freq:'114.80',name:'Lisboa'},
+  // Denmark
+  {id:'CPH',type:'VOR/DME',lat:55.6179,lon:12.6561,freq:'116.40',name:'Copenhagen'},
+  // Sweden
+  {id:'ARN',type:'VOR/DME',lat:59.6519,lon:17.9186,freq:'115.90',name:'Stockholm'},
+  // Norway
+  {id:'OSL',type:'VOR/DME',lat:60.1939,lon:11.1004,freq:'114.45',name:'Oslo'},
+  // Finland
+  {id:'HEL',type:'VOR/DME',lat:60.3172,lon:24.9633,freq:'115.90',name:'Helsinki'},
+  // Greece
+  {id:'ATH',type:'VOR/DME',lat:37.9364,lon:23.9445,freq:'114.40',name:'Athens'},
+  // Poland
+  {id:'WAR',type:'VOR/DME',lat:52.1657,lon:20.9671,freq:'113.90',name:'Warsaw'},
+  // Turkey
+  {id:'IST',type:'VOR/DME',lat:41.2753,lon:28.7519,freq:'116.10',name:'Istanbul'},
+  // NDB examples
+  {id:'SJK',type:'NDB',lat:40.4719,lon:-3.5626,freq:'363',name:'Madrid Barajas'},
+  {id:'BLA',type:'NDB',lat:41.2971,lon:2.0785,freq:'335',name:'Barcelona Prat'},
+];
+
+function renderNavaidOnMap(mapInstance, nav){
+  if(!mapInstance||!nav||!window.L)return;
+  const isVOR = /VOR/.test(nav.type||'');
+  const isNDB = /NDB/.test(nav.type||'');
+  const isDME = /DME/.test(nav.type||'') && !isVOR;
+  const color = isVOR ? '#a855f7' : isNDB ? '#f97316' : '#6366f1';
+  const shape = isVOR ? '⬡' : isNDB ? '◎' : '◇';
+  const sz = isVOR ? 15 : 11;
+  const lat = nav.lat ?? nav.geometry?.coordinates?.[1];
+  const lon = nav.lon ?? nav.geometry?.coordinates?.[0];
+  if(!lat||!lon)return;
+  const icon = L.divIcon({
+    html:`<div style="color:${color};font-size:${sz}px;text-shadow:0 0 4px rgba(0,0,0,.9);cursor:pointer;text-align:center;line-height:1">${shape}</div>`,
+    className:'',iconSize:[sz+2,sz+2],iconAnchor:[(sz+2)/2,(sz+2)/2]
+  });
+  const id = nav.id||nav.ident||nav.icaoCode||'?';
+  const name = nav.name||nav.id||'';
+  const type = nav.type||'';
+  const freq = nav.frequency?.value||nav.freq||'';
+  const unit = isNDB?'kHz':'MHz';
+  L.marker([lat,lon],{icon,zIndexOffset:-100}).addTo(mapInstance)
+    .bindPopup(`<div style="font-family:sans-serif;min-width:160px;font-size:13px">
+      <div style="font-weight:700;color:${color}">${id}</div>
+      <div style="margin:3px 0;font-size:12px">${name}</div>
+      <div style="font-family:monospace;font-size:11px;color:#64748b">${type}${freq?' · '+freq+' '+unit:''}</div>
+    </div>`,{maxWidth:200});
+}
+
+async function addNavaidsToMap(mapInstance){
+  if(!mapInstance||!window.L)return;
+  // Try OpenAIP first
+  const openAIPNavaids = await fetchOpenAIPNavaids();
+  if(openAIPNavaids.length > 0){
+    console.log('OpenAIP navaids loaded:', openAIPNavaids.length);
+    openAIPNavaids.forEach(n=>renderNavaidOnMap(mapInstance, n));
+    openaipNavaidsLoaded = true;
+  } else {
+    // Fallback to built-in list
+    console.log('Using built-in navaids:', NAVAIDS.length);
+    NAVAIDS.forEach(n=>renderNavaidOnMap(mapInstance, n));
+  }
+}
+
+// Patch initMap to include navaids + weather tiles
+const ___initMapOrig = initMap;
+initMap = function(){
+  ___initMapOrig();
+  if(!map||!window.L)return;
+
+  // Add navaid layer
+  addNavaidsToMap(map);
+
+  // ── Free weather tile layers ──
+  // RainViewer: 100% free radar/satellite tiles, no API key
+  // Open-Meteo model tiles via public KNMI (no key)
+  // Stamen/CARTO terrain for reference
+
+  // RainViewer radar (requires fetching current timestamp)
+  async function addRainViewerLayer(){
+    try{
+      const rv = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+      const rvData = await rv.json();
+      const ts = rvData.radar?.nowcast?.[0]?.time || Math.floor(Date.now()/1000);
+      const radarLayer = L.tileLayer(
+        `https://tilecache.rainviewer.com/v2/radar/${ts}/256/{z}/{x}/{y}/2/1_1.png`,
+        {opacity:0.55, attribution:'<a href="https://rainviewer.com">RainViewer</a>',
+         maxZoom:18, minZoom:2}
+      );
+      // Satellite layer
+      const satLayer = L.tileLayer(
+        `https://tilecache.rainviewer.com/v2/satellite/infrared/${ts}/256/{z}/{x}/{y}/0/0_0.png`,
+        {opacity:0.45, attribution:'<a href="https://rainviewer.com">RainViewer</a>',
+         maxZoom:12, minZoom:2}
+      );
+      // Windy widget toggle button instead of tile for complex layers
+      const wxOverlays = {
+        '🌧 Radar precipitación': radarLayer,
+        '🛰 Satélite infrarrojo': satLayer,
+      };
+      L.control.layers({}, wxOverlays, {position:'bottomleft', collapsed:false}).addTo(map);
+    } catch(e){
+      // Fallback: simple layer control without radar
+      console.warn('RainViewer not available:', e);
+    }
+  }
+  addRainViewerLayer();
+
+  // VOR/DME legend
+  const legend = L.control({position:'bottomright'});
+  legend.onAdd = function(){
+    const d=L.DomUtil.create('div');
+    d.style.cssText='background:rgba(11,24,41,.85);color:white;padding:8px 10px;border-radius:8px;font-size:11px;line-height:1.8;font-family:sans-serif';
+    d.innerHTML=`<div style="font-weight:700;margin-bottom:4px;color:#F59E0B">Radioayudas</div>
+      <div><span style="color:#a855f7">⬡</span> VOR / VOR-DME</div>
+      <div><span style="color:#f97316">◎</span> NDB</div>
+      <div style="margin-top:6px;font-weight:700;color:#F59E0B">Categorías</div>
+      <div><span style="color:#22c55e">●</span> VFR &nbsp;<span style="color:#eab308">●</span> MVFR</div>
+      <div><span style="color:#ef4444">●</span> IFR &nbsp;<span style="color:#a855f7">●</span> LIFR</div>`;
+    return d;
+  };
+  legend.addTo(map);
+};
+
+// Also add navaids to route map
+const ___initRouteOrig = initRouteMap;
+initRouteMap = function(){
+  ___initRouteOrig();
+  if(routeMap && window.L) addNavaidsToMap(routeMap);
+};
+
+// Wire winds aloft load when tab opens
+const ____origST = showTab;
+showTab = function(id){
+  ____origST(id);
+  if(id==='herramientas') setTimeout(loadWindsAloft, 200);
+};
+
+// Also wire subtab
+const __origSubTab = showSubTab;
+showSubTab = function(id){
+  __origSubTab(id);
+  if(id==='winds') setTimeout(loadWindsAloft, 100);
+};
+
+// Init winds aloft on load
+setTimeout(()=>{
+  const el = document.getElementById('winds-result');
+  if(el) loadWindsAloft();
+}, 500);
+
+
+
+// ══════════════════════════════════════════════════════════
+// PLAN MANAGEMENT & FREEMIUM STRATEGY
+// ══════════════════════════════════════════════════════════
+
+// How other apps handle usage limits:
+// - Count by session storage (resets on browser close) = more generous feeling
+// - Count by action type (briefings cost more than lookups)
+// - Logged-in users get more than anonymous
+// Anonymous: 5/day | Free account: 10/day | Pro: unlimited
+
+function trackUsageWeighted(actionType){
+  // Different actions cost different amounts
+  const costs = { route: 2, apt: 1, notam: 1, map: 0, tool: 0 };
+  const cost = costs[actionType] || 1;
+  const limit = currentUser ? featureLimit('briefingsPerDay') : 5;
+
+  usageCount += cost;
+  localStorage.setItem('pf_usage_' + new Date().toDateString(), usageCount);
+  updateUsageBar();
+
+  if(usageCount > limit && !isPro){
+    if(currentUser){
+      showToast('Límite diario alcanzado. Actualiza a Pro para uso ilimitado.','warn');
+    } else {
+      showUpgradeModal('Crea una cuenta gratuita para 10 consultas/día, o hazte Pro para acceso ilimitado.');
+    }
+    return false;
+  }
+  return true;
+}
+
+function showUpgradeModal(msg){
+  // Show auth modal with upgrade message
+  const body = document.getElementById('auth-body-msg');
+  if(body) body.textContent = msg;
+  openAuth();
+}
+
+// ── Activate a plan (called after Stripe payment in production) ──
+function activatePlan(plan){
+  userPlan = plan;
+  isPro = plan !== 'free';
+  isProPlus = plan === 'proplus' || plan === 'business';
+  localStorage.setItem('pf_plan', plan);
+  if(currentUser){
+    currentUser.plan = plan;
+    localStorage.setItem('pf_user', JSON.stringify(currentUser));
+    // Update users list
+    const users = JSON.parse(localStorage.getItem('pf_users')||'[]');
+    const idx = users.findIndex(u=>u.id===currentUser.id);
+    if(idx>=0){ users[idx].plan = plan; localStorage.setItem('pf_users', JSON.stringify(users)); }
+  }
+  updateHeaderAuth();
+  showToast('Plan activado: ' + plan.toUpperCase() + ' ✓', 'success');
+}
+
+// ── DEV SHORTCUT: type pfActivatePro() in console to test Pro features ──
+window.pfActivatePro = ()=>activatePlan('pro');
+window.pfActivateProPlus = ()=>activatePlan('proplus');
+window.pfResetFree = ()=>{ activatePlan('free'); localStorage.removeItem('pf_usage_'+new Date().toDateString()); location.reload(); };
+
+// ── Pro vs Pro+ differences (shown in pricing) ──
+// PRO (3.99€/mo):
+//   ✓ Unlimited daily briefings
+//   ✓ All NOTAMs (no 3-item cap)
+//   ✓ PDF briefing export
+//   ✓ 30-day history
+//   ✓ Up to 10 alerts
+//   ✓ Historical climate data
+//   ✓ Custom W&B aircraft profiles
+//   ✗ Multi-device sync (localStorage only)
+//   ✗ API access
+//   ✗ Advanced alert notifications
+//
+// PRO+ (7.99€/mo):
+//   ✓ Everything in Pro
+//   ✓ Unlimited history
+//   ✓ Up to 50 alerts with smart grouping
+//   ✓ Multi-device sync (requires Supabase backend)
+//   ✓ REST API access (50 req/hour)
+//   ✓ Priority email support
+//   ✓ Route comparison tool
+//   ✓ Custom checklist templates
+//   ✓ Export to EFB formats
+
+// ══════════════════════════════════════════════════════════
+// SUPABASE INTEGRATION (ready to connect)
+// ══════════════════════════════════════════════════════════
+// To activate: replace SUPABASE_URL and SUPABASE_ANON_KEY
+// with values from your Supabase project Settings > API
+const SUPABASE_URL = null;   // e.g. 'https://xxxx.supabase.co'
+const SUPABASE_ANON_KEY = null; // your anon/public key
+
+let supabase = null;
+
+async function initSupabase(){
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
+  if(window.supabase_loaded) return true;
+  return new Promise(resolve=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    s.onload = ()=>{
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window.supabase_loaded = true;
+      resolve(true);
+    };
+    s.onerror = ()=>resolve(false);
+    document.head.appendChild(s);
+  });
+}
+
+// Enhanced login: tries Supabase first, falls back to localStorage
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  if(!email||!pass){ showToast('Introduce email y contraseña','warn'); return; }
+
+  if(SUPABASE_URL && await initSupabase()){
+    // Supabase auth
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if(error){ showToast('Error: ' + error.message,'err'); return; }
+    // Fetch profile
+    const { data: profile } = await supabase.from('users').select('*').eq('id', data.user.id).single();
+    const user = { id: data.user.id, name: profile?.name||email, email, license: profile?.license||'',
+                   plan: profile?.plan||'free', created: data.user.created_at };
+    loginUser(user);
+  } else {
+    // localStorage fallback
+    const users = JSON.parse(localStorage.getItem('pf_users')||'[]');
+    const user  = users.find(u=>u.email===email && u.pass===btoa(pass));
+    if(!user){ showToast('Credenciales incorrectas','err'); return; }
+    loginUser(user);
+  }
+}
+
+async function doRegister(){
+  const name    = document.getElementById('reg-name').value.trim();
+  const email   = document.getElementById('reg-email').value.trim();
+  const pass    = document.getElementById('reg-pass').value;
+  const license = document.getElementById('reg-license').value;
+  if(!name||!email||!pass){ showToast('Completa todos los campos','warn'); return; }
+  if(pass.length<8){ showToast('Contraseña mínimo 8 caracteres','warn'); return; }
+  if(!email.includes('@')){ showToast('Email no válido','warn'); return; }
+
+  if(SUPABASE_URL && await initSupabase()){
+    const { data, error } = await supabase.auth.signUp({ email, password: pass });
+    if(error){ showToast('Error: ' + error.message,'err'); return; }
+    await supabase.from('users').insert([{ id: data.user.id, name, email, license, plan:'free' }]);
+    const user = { id: data.user.id, name, email, license, plan:'free', created: new Date().toISOString() };
+    loginUser(user);
+    showToast('¡Bienvenido, '+name.split(' ')[0]+'! Revisa tu email para confirmar la cuenta.','success');
+  } else {
+    // localStorage fallback
+    const users = JSON.parse(localStorage.getItem('pf_users')||'[]');
+    if(users.find(u=>u.email===email)){ showToast('Email ya registrado','warn'); return; }
+    const u = { id:Date.now(), name, email, pass:btoa(pass), license, plan:'free', created:new Date().toISOString(), alerts:[] };
+    users.push(u);
+    localStorage.setItem('pf_users', JSON.stringify(users));
+    loginUser(u);
+    showToast('¡Bienvenido, '+name.split(' ')[0]+'! Cuenta creada.','success');
+  }
+}
+
+// Save history to Supabase if available, localStorage otherwise
+async function addToHistory(type, data){
+  const key = getHistKey();
+  const hist = JSON.parse(localStorage.getItem(key)||'[]');
+  hist.unshift({ type, data, ts: new Date().toISOString(), id: Date.now() });
+  if(hist.length > 200) hist.splice(200);
+  localStorage.setItem(key, JSON.stringify(hist));
+
+  if(supabase && currentUser && SUPABASE_URL){
+    try{
+      await supabase.from('history').insert([{
+        user_id: currentUser.id, type, data: JSON.stringify(data)
+      }]);
+    }catch(e){ /* silently fail, localStorage has it */ }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// METAR HISTORY — last 24 hours from aviationweather
+// ══════════════════════════════════════════════════════════
+async function fetchMetar24h(icao){
+  // API supports up to 24 hours with hours parameter
+  const d = await apiFetch(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=json&taf=false&hours=24`);
+  return Array.isArray(d) ? d.reverse() : []; // oldest first
+}
+
+function buildMetar24hChart(metars, icao){
+  if(!metars.length) return '<div class="empty">Sin historial METAR disponible</div>';
+
+  const W=540, H=120, pad={l:40,r:10,t:20,b:30};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+
+  // Extract data
+  const points = metars.map(m=>{
+    const t = m.obsTime ? new Date(m.obsTime.replace(' ','T')+'Z') : new Date();
+    const h = t.getUTCHours() + t.getUTCMinutes()/60;
+    const vis = m.visib ? m.visib*1.60934 : null; // km
+    const wind = m.wspd || 0;
+    const temp = m.temp;
+    const cat = flightCat(m);
+    return {h, vis, wind, temp, cat, raw: m.rawOb||''};
+  });
+
+  if(!points.length) return '';
+
+  const hMin = points[0].h, hMax = points[points.length-1].h || hMin+1;
+  const hRange = Math.max(hMax-hMin, 1);
+  const tx = h => pad.l + ((h-hMin)/hRange)*pw;
+
+  // Visibility line
+  const visMax = 12, visMin = 0;
+  const ty = v => pad.t + ph - ((Math.min(v||0,visMax)-visMin)/(visMax-visMin))*ph;
+
+  const CAT_COLOR = {VFR:'#22c55e',MVFR:'#eab308',IFR:'#ef4444',LIFR:'#a855f7',UNK:'#94a3b8'};
+
+  // Background bands by category
+  let bands = '';
+  for(let i=0; i<points.length-1; i++){
+    const x1=tx(points[i].h), x2=tx(points[i+1].h);
+    const col = CAT_COLOR[points[i].cat]||'#94a3b8';
+    bands += `<rect x="${x1.toFixed(1)}" y="${pad.t}" width="${Math.max(0,(x2-x1)).toFixed(1)}" height="${ph}" fill="${col}" opacity=".1"/>`;
+  }
+
+  // Visibility line path
+  const visPoints = points.filter(p=>p.vis!=null);
+  let visPath = '';
+  if(visPoints.length>1){
+    visPath = visPoints.map((p,i)=>`${i===0?'M':'L'}${tx(p.h).toFixed(1)},${ty(p.vis).toFixed(1)}`).join(' ');
+  }
+
+  // Wind speed line
+  const windMax = Math.max(...points.map(p=>p.wind), 25);
+  const tw = v => pad.t + ph - (Math.min(v,windMax)/windMax)*ph;
+  let windPath = '';
+  windPath = points.map((p,i)=>`${i===0?'M':'L'}${tx(p.h).toFixed(1)},${tw(p.wind).toFixed(1)}`).join(' ');
+
+  // Hour labels
+  let hlabels = '';
+  const firstH = Math.ceil(hMin), lastH = Math.floor(hMax);
+  for(let h=firstH; h<=lastH; h++){
+    if((h-firstH)%3===0){
+      hlabels += `<text x="${tx(h).toFixed(1)}" y="${H-5}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">${String(h%24).padStart(2,'0')}Z</text>`;
+    }
+  }
+
+  // Y-axis labels
+  let ylabels = '';
+  for(let v=0; v<=12; v+=3){
+    ylabels += `<text x="${pad.l-3}" y="${ty(v)+3}" text-anchor="end" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">${v}km</text>`;
+  }
+
+  const svgChart = `<svg width="100%" viewBox="0 0 ${W} ${H}" style="max-width:${W}px">
+    <rect x="${pad.l}" y="${pad.t}" width="${pw}" height="${ph}" fill="rgba(0,0,0,.2)" rx="4"/>
+    ${bands}
+    <line x1="${pad.l}" y1="${ty(5)}" x2="${pad.l+pw}" y2="${ty(5)}" stroke="rgba(239,68,68,.3)" stroke-width="1" stroke-dasharray="3 2"/>
+    <text x="${pad.l-3}" y="${ty(5)+3}" text-anchor="end" font-size="7" fill="rgba(239,68,68,.6)" font-family="monospace">5km</text>
+    ${visPath?`<path d="${visPath}" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`:''}
+    ${windPath?`<path d="${windPath}" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2" stroke-linecap="round" opacity=".7"/>`:''}
+    ${points.map(p=>`<circle cx="${tx(p.h).toFixed(1)}" cy="${ty(p.vis??0).toFixed(1)}" r="3" fill="${CAT_COLOR[p.cat]||'#94a3b8'}" stroke="#0B1829" stroke-width="1.5"/>`).join('')}
+    ${hlabels}${ylabels}
+    <line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t+ph}" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+    <line x1="${pad.l}" y1="${pad.t+ph}" x2="${pad.l+pw}" y2="${pad.t+ph}" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+  </svg>`;
+
+  // Summary table
+  const tableRows = metars.slice(0,12).map(m=>{
+    const cat = flightCat(m);
+    const catColors = {VFR:'var(--vfr)',MVFR:'var(--mvfr)',IFR:'var(--ifr)',LIFR:'var(--lifr)',UNK:'var(--gray400)'};
+    const visKm = m.visib ? (m.visib*1.60934).toFixed(1) : '—';
+    return `<tr>
+      <td class="mono" style="font-size:11px">${(m.obsTime||'').substring(11,16)}Z</td>
+      <td><span style="color:${catColors[cat]};font-weight:700;font-size:11px">${cat}</span></td>
+      <td class="mono" style="font-size:11px">${m.wdir!=null?m.wdir+'°/'+m.wspd+'kt':'—'}</td>
+      <td class="mono" style="font-size:11px">${visKm} km</td>
+      <td class="mono" style="font-size:11px">${m.temp!=null?m.temp+'°C':'—'}</td>
+      <td class="mono" style="font-size:11px">${m.altim!=null?Math.round(m.altim)+' hPa':'—'}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div style="margin-bottom:8px;font-size:11px;color:var(--text3)">
+      <span style="color:#60a5fa">— Visibilidad (km)</span> &nbsp;
+      <span style="color:#f59e0b;opacity:.8">- - Viento (kt)</span> &nbsp;
+      ${Object.entries({VFR:'#22c55e',MVFR:'#eab308',IFR:'#ef4444',LIFR:'#a855f7'}).map(([c,col])=>`<span style="color:${col}">● ${c}</span>`).join(' ')}
+    </div>
+    ${svgChart}
+    <div style="overflow-x:auto;margin-top:12px">
+      <table class="navlog-table" style="font-size:11px">
+        <thead><tr><th>Hora UTC</th><th>Cat.</th><th>Viento</th><th>Visib.</th><th>Temp.</th><th>QNH</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// WIND-ON-RUNWAY by hour from TAF
+// ══════════════════════════════════════════════════════════
+function buildWindRunwayForecast(tafRaw, icao){
+  if(!tafRaw) return '';
+  const rwys = RUNWAY_DATA[icao];
+  if(!rwys || !rwys.length) return '';
+
+  // Parse TAF change groups for wind
+  const allText = tafRaw.toUpperCase();
+  const now = new Date();
+  const forecasts = [];
+
+  // FM groups
+  const fmRe = /FM(\d{2})(\d{2})(\d{2})\s+(.*?)(?=FM\d{6}|TEMPO|BECMG|$)/gs;
+  let fm;
+  while((fm=fmRe.exec(allText))!==null){
+    const h = parseInt(fm[1]);
+    const wMatch = fm[4].match(/(\d{3}|VRB)(\d{2,3})(G(\d{2,3}))?KT/);
+    if(wMatch) forecasts.push({ h, wdir:parseInt(wMatch[1])||0, wspd:parseInt(wMatch[2]), wgst:wMatch[4]?parseInt(wMatch[4]):null });
+  }
+
+  if(!forecasts.length) return '';
+
+  const rows = forecasts.slice(0,8).map(f=>{
+    const pairs = [...new Set(rwys.map(r=>r.hdg<=180?r.hdg:r.hdg-180))];
+    const rwyCols = pairs.map(hdg=>{
+      const angle = (f.wdir - hdg) * Math.PI/180;
+      const xw = Math.abs(f.wspd * Math.sin(angle)).toFixed(1);
+      const hw = f.wspd * Math.cos(angle);
+      const color = parseFloat(xw)>15?'var(--ifr)':parseFloat(xw)>10?'var(--mvfr)':'var(--vfr)';
+      const rwyId = rwys.find(r=>(r.hdg<=180?r.hdg:r.hdg-180)===hdg)?.id||hdg+'°';
+      return `<td class="mono" style="font-size:11px;color:${color}">${xw}kt XW<br><span style="font-size:10px;color:var(--text3)">${hw>0?'↑':'↓'}${Math.abs(hw).toFixed(0)}kt</span></td>`;
+    }).join('');
+    return `<tr>
+      <td class="mono" style="font-size:11px">${String(f.h).padStart(2,'0')}:00Z</td>
+      <td class="mono" style="font-size:11px">${String(f.wdir).padStart(3,'0')}°/${f.wspd}kt${f.wgst?'G'+f.wgst:''}
+      </td>${rwyCols}</tr>`;
+  });
+
+  const rwyHeaders = [...new Set(rwys.map(r=>r.hdg<=180?r.hdg:r.hdg-180))].map(h=>{
+    const rwy = rwys.find(r=>(r.hdg<=180?r.hdg:r.hdg-180)===h);
+    return `<th>Pista ${rwy?.id||h+'°'}</th>`;
+  }).join('');
+
+  return `<div style="overflow-x:auto;margin-top:12px">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Viento cruzado previsto por pista (TAF)</div>
+    <table class="navlog-table">
+      <thead><tr><th>Hora UTC</th><th>Viento</th>${rwyHeaders}</tr></thead>
+      <tbody>${rows.join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// PATCH searchApt to include 24h METAR history + wind forecast
+// ══════════════════════════════════════════════════════════
+const _patchSearchApt = searchApt;
+searchApt = async function(){
+  // Call original (which now includes full render)
+  await _patchSearchApt.apply(this, arguments);
+
+  // After render, add 24h history and TAF wind forecast
+  const icao = (document.getElementById('apt-search')?.value||'').trim().toUpperCase().slice(0,4);
+  if(!icao||icao.length<3) return;
+  const res = document.getElementById('apt-result');
+  if(!res) return;
+
+  // Load 24h METAR async and append
+  const [metars24, taf] = await Promise.all([fetchMetar24h(icao), fetchTaf(icao)]);
+
+  if(metars24 && metars24.length > 1){
+    const histCard = document.createElement('div');
+    histCard.className = 'card';
+    histCard.innerHTML = `<div class="card-title">Evolución últimas 24 horas — METAR histórico</div>
+      ${buildMetar24hChart(metars24, icao)}`;
+    // Insert after the METAR/TAF cards (before NOTAMs)
+    const notamCard = res.querySelector('.card:last-child');
+    if(notamCard) res.insertBefore(histCard, notamCard);
+    else res.appendChild(histCard);
+  }
+
+  // Wind on runway from TAF
+  if(taf && taf.rawTAF && RUNWAY_DATA[icao]){
+    const windForecast = buildWindRunwayForecast(taf.rawTAF, icao);
+    if(windForecast){
+      const windCard = document.createElement('div');
+      windCard.className = 'card';
+      windCard.innerHTML = windForecast;
+      const notamCard = res.querySelector('.card:last-child');
+      if(notamCard) res.insertBefore(windCard, notamCard);
+      else res.appendChild(windCard);
+    }
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// UPDATED PRICING PAGE — Pro vs Pro+ clearly differentiated
+// ══════════════════════════════════════════════════════════
+function renderPricingBadge(){
+  const plan = userPlan;
+  // Update pricing buttons based on current plan
+  const planBtns = {
+    free: document.querySelector('.plan-card:not(.featured) .plan-btn:not([style])'),
+  };
+  // Update "plan actual" text
+  document.querySelectorAll('.plan-btn').forEach(btn=>{
+    if(btn.textContent.trim()==='Plan actual') btn.textContent = '✓ Plan actual';
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// OPENAIP — Enhanced airport search
+// ══════════════════════════════════════════════════════════
+async function searchOpenAIPAirport(icao){
+  try{
+    const r = await fetch(`https://api.core.openaip.net/api/airports?icaoCode=${icao}&apiKey=${OPENAIP_KEY}`,
+      { headers: { 'x-openaip-api-key': OPENAIP_KEY } });
+    if(!r.ok) return null;
+    const d = await r.json();
+    return (d.items||d.data||[])[0] || null;
+  }catch(e){ return null; }
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+// Load saved plan
+(function(){
+  const savedPlan = localStorage.getItem('pf_plan');
+  if(savedPlan && PLAN_FEATURES[savedPlan]){
+    userPlan = savedPlan;
+    isPro = userPlan !== 'free';
+    isProPlus = userPlan === 'proplus' || userPlan === 'business';
+  }
+  // Init winds aloft tab on first tool open
+  const sub = document.getElementById('sub-winds');
+  if(sub) sub.addEventListener('click', ()=>{ if(!sub.dataset.loaded){ loadWindsAloft(); sub.dataset.loaded='1'; }}, {once:false});
+})();
+
+console.log('PreFlight Pro loaded. Plan:', userPlan, '| Limit:', featureLimit('briefingsPerDay'), 'req/day');
 
 </script>
 </body>
